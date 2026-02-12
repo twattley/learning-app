@@ -1,26 +1,30 @@
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
 :root {
-  --bg:        #0f172a;
-  --surface:   #1e293b;
-  --border:    #334155;
-  --text:      #e2e8f0;
-  --text-dim:  #94a3b8;
-  --text-muted:#64748b;
-  --accent:    #2563eb;
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --border: #334155;
+  --text: #e2e8f0;
+  --text-dim: #94a3b8;
+  --text-muted: #64748b;
+  --accent: #2563eb;
   --accent-hover: #1d4ed8;
-  --badge-bg:  #1e3a5f;
-  --badge-text:#7dd3fc;
-  --danger:    #dc2626;
+  --badge-bg: #1e3a5f;
+  --badge-text: #7dd3fc;
+  --danger: #dc2626;
   --danger-hover: #b91c1c;
-  --radius:    12px;
+  --radius: 12px;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   background: var(--bg);
   color: var(--text);
@@ -59,7 +63,9 @@ html, body, #root {
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .nav-link:hover {
@@ -94,14 +100,32 @@ html, body, #root {
   color: #fff;
 }
 
-.btn-primary   { background: var(--accent); }
-.btn-primary:hover { background: var(--accent-hover); }
-.btn-secondary { background: #475569; }
-.btn-secondary:hover { background: #64748b; }
-.btn-danger    { background: var(--danger); }
-.btn-danger:hover { background: var(--danger-hover); }
-.btn-sm { padding: 6px 12px; font-size: 12px; }
-.btn:disabled  { opacity: 0.5; cursor: not-allowed; }
+.btn-primary {
+  background: var(--accent);
+}
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+.btn-secondary {
+  background: #475569;
+}
+.btn-secondary:hover {
+  background: #64748b;
+}
+.btn-danger {
+  background: var(--danger);
+}
+.btn-danger:hover {
+  background: var(--danger-hover);
+}
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 /* ── Cards ── */
 .card {
@@ -128,7 +152,9 @@ html, body, #root {
 }
 
 /* ── Forms ── */
-.form-group { margin-bottom: 16px; }
+.form-group {
+  margin-bottom: 16px;
+}
 
 .form-group label {
   display: block;
@@ -143,7 +169,8 @@ html, body, #root {
   font-weight: 400;
 }
 
-.input, .textarea {
+.input,
+.textarea {
   width: 100%;
   background: var(--bg);
   color: #f1f5f9;
@@ -155,7 +182,8 @@ html, body, #root {
   outline: none;
 }
 
-.input:focus, .textarea:focus {
+.input:focus,
+.textarea:focus {
   border-color: var(--accent);
 }
 
@@ -303,7 +331,9 @@ html, body, #root {
 }
 
 /* ── Markdown inside cards ── */
-.md-content h1, .md-content h2, .md-content h3 {
+.md-content h1,
+.md-content h2,
+.md-content h3 {
   color: #f1f5f9;
   margin-top: 16px;
   margin-bottom: 8px;
@@ -338,7 +368,8 @@ html, body, #root {
   line-height: 1.5;
 }
 
-.md-content ul, .md-content ol {
+.md-content ul,
+.md-content ol {
   padding-left: 24px;
   margin-bottom: 8px;
 }
@@ -372,7 +403,9 @@ html, body, #root {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .empty-text {
@@ -544,7 +577,16 @@ html, body, #root {
     width: 60px;
     padding: 16px 8px;
   }
-  .logo { font-size: 16px; padding: 8px 4px 16px; }
-  .nav-link { font-size: 18px; text-align: center; padding: 10px 8px; }
-  .content { padding: 20px 16px; }
+  .logo {
+    font-size: 16px;
+    padding: 8px 4px 16px;
+  }
+  .nav-link {
+    font-size: 18px;
+    text-align: center;
+    padding: 10px 8px;
+  }
+  .content {
+    padding: 20px 16px;
+  }
 }

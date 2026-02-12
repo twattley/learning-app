@@ -3,6 +3,7 @@ Math problem generation and computation service.
 
 Uses scipy for accurate calculations and LLM for creative word problem generation.
 """
+
 import random
 from dataclasses import dataclass
 from typing import Any, Callable
@@ -13,6 +14,7 @@ from scipy import stats
 @dataclass
 class MathTemplate:
     """Definition of a math problem type."""
+
     type_id: str
     topic: str
     concept: str
@@ -25,6 +27,7 @@ class MathTemplate:
 
 
 # ── Computation Functions ──
+
 
 def _poisson_pmf(params: dict) -> float:
     """P(X = k) for Poisson distribution."""
@@ -64,12 +67,12 @@ def _normal_zscore(params: dict) -> float:
 def _exponential_cdf(params: dict) -> float:
     """P(X <= x) for Exponential distribution."""
     # scipy uses scale = 1/lambda
-    return stats.expon.cdf(params["x"], scale=1/params["lambda"])
+    return stats.expon.cdf(params["x"], scale=1 / params["lambda"])
 
 
 def _exponential_survival(params: dict) -> float:
     """P(X > x) for Exponential distribution."""
-    return stats.expon.sf(params["x"], scale=1/params["lambda"])
+    return stats.expon.sf(params["x"], scale=1 / params["lambda"])
 
 
 def _present_value(params: dict) -> float:
@@ -84,7 +87,10 @@ def _future_value(params: dict) -> float:
 
 def _compound_interest(params: dict) -> float:
     """A = P * (1 + r/n)^(n*t)"""
-    return params["principal"] * ((1 + params["rate"]/params["compounds_per_year"]) ** (params["compounds_per_year"] * params["years"]))
+    return params["principal"] * (
+        (1 + params["rate"] / params["compounds_per_year"])
+        ** (params["compounds_per_year"] * params["years"])
+    )
 
 
 # ── Template Registry ──
@@ -207,7 +213,12 @@ MATH_TEMPLATES: dict[str, MathTemplate] = {
         type_id="compound_interest",
         topic="finance",
         concept="Compound Interest - final amount with periodic compounding",
-        param_ranges={"principal": (1000, 50000), "rate": (0.03, 0.10), "compounds_per_year": (1, 12), "years": (1, 15)},
+        param_ranges={
+            "principal": (1000, 50000),
+            "rate": (0.03, 0.10),
+            "compounds_per_year": (1, 12),
+            "years": (1, 15),
+        },
         asks_for="The final amount A = P(1 + r/n)^(nt)",
         example="You deposit £5,000 in a savings account with 4% annual interest, compounded monthly. How much will you have after 8 years?",
         compute=_compound_interest,
@@ -253,18 +264,20 @@ def generate_params(template: MathTemplate) -> dict[str, float]:
             params[param_name] = round(random.uniform(min_val, max_val), 2)
         elif param_name in ("fv", "pv", "principal"):
             # Money - round to nice numbers
-            params[param_name] = round(random.uniform(min_val, max_val), -2)  # Round to nearest 100
+            params[param_name] = round(
+                random.uniform(min_val, max_val), -2
+            )  # Round to nearest 100
         elif param_name == "rate":
             # Interest rate - round to nice percentage
             params[param_name] = round(random.uniform(min_val, max_val), 2)
         else:
             # General numeric
             params[param_name] = round(random.uniform(min_val, max_val), 1)
-    
+
     # For binomial, ensure k <= n
     if "k" in params and "n" in params:
         params["k"] = min(params["k"], params["n"])
-    
+
     return params
 
 
@@ -273,15 +286,19 @@ def compute_answer(template: MathTemplate, params: dict[str, float]) -> float:
     return template.compute(params)
 
 
-def grade_math_answer(user_answer: float, correct_answer: float, tolerance: float) -> dict:
+def grade_math_answer(
+    user_answer: float, correct_answer: float, tolerance: float
+) -> dict:
     """Grade a math answer with tolerance for floating point."""
     # Handle percentage difference for very small/large numbers
     if abs(correct_answer) < 0.0001:
         is_correct = abs(user_answer - correct_answer) < tolerance
     else:
         relative_error = abs(user_answer - correct_answer) / abs(correct_answer)
-        is_correct = relative_error < tolerance or abs(user_answer - correct_answer) < tolerance
-    
+        is_correct = (
+            relative_error < tolerance or abs(user_answer - correct_answer) < tolerance
+        )
+
     return {
         "is_correct": is_correct,
         "user_answer": user_answer,

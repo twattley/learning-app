@@ -49,27 +49,27 @@ RECALL_REPHRASE_QUESTIONS=true
 EOF
 
 # Start the server
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8002
 ```
 
 Verify it's running:
 
 ```bash
-curl http://localhost:8000/health
+curl http://localhost:8002/health
 # {"status":"ok"}
 ```
 
 ### Environment Variables
 
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `RECALL_DATABASE_URL` | Yes | — | PostgreSQL connection string |
-| `RECALL_GEMINI_API_KEY` | Yes | — | Google AI API key (needed for math + refinement) |
-| `RECALL_LLM_PROVIDER` | No | `gemini` | Provider for Q&A grading: `gemini`, `openai`, or `ollama` |
-| `RECALL_GEMINI_MODEL` | No | `gemini-2.0-flash` | Gemini model |
-| `RECALL_OLLAMA_BASE_URL` | No | `http://localhost:11434/v1` | Ollama endpoint |
-| `RECALL_OLLAMA_MODEL` | No | `llama3` | Ollama model name |
-| `RECALL_REPHRASE_QUESTIONS` | No | `false` | Rephrase questions on each review |
+| Variable                    | Required | Default                     | Description                                               |
+| --------------------------- | -------- | --------------------------- | --------------------------------------------------------- |
+| `RECALL_DATABASE_URL`       | Yes      | —                           | PostgreSQL connection string                              |
+| `RECALL_GEMINI_API_KEY`     | Yes      | —                           | Google AI API key (needed for math + refinement)          |
+| `RECALL_LLM_PROVIDER`       | No       | `gemini`                    | Provider for Q&A grading: `gemini`, `openai`, or `ollama` |
+| `RECALL_GEMINI_MODEL`       | No       | `gemini-2.0-flash`          | Gemini model                                              |
+| `RECALL_OLLAMA_BASE_URL`    | No       | `http://localhost:11434/v1` | Ollama endpoint                                           |
+| `RECALL_OLLAMA_MODEL`       | No       | `llama3`                    | Ollama model name                                         |
+| `RECALL_REPHRASE_QUESTIONS` | No       | `false`                     | Rephrase questions on each review                         |
 
 ## 3. Web Frontend
 
@@ -79,11 +79,11 @@ cd web
 # Install dependencies
 npm install
 
-# Start dev server (proxies /api to backend on :8000)
+# Start dev server (proxies /api to backend on :8002)
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173).
+Open [http://localhost:5175](http://localhost:5175).
 
 ## 4. Mobile App (Optional)
 
@@ -99,13 +99,13 @@ npm install
 npx expo start
 ```
 
-Scan the QR code with Expo Go. On first launch, go to the **Settings** tab to configure the API URL (e.g. `http://server:8000/api/v1`).
+Scan the QR code with Expo Go. On first launch, go to the **Settings** tab to configure the API URL (e.g. `http://server:8002/api/v1`).
 
 ## Quick Start Summary
 
 ```bash
 # Terminal 1 — Backend
-cd backend && source .venv/bin/activate && uvicorn app.main:app --reload --host 0.0.0.0
+cd backend && source .venv/bin/activate && uvicorn app.main:app --reload --host 0.0.0.0 --port 8002
 
 # Terminal 2 — Web
 cd web && npm run dev
@@ -115,7 +115,7 @@ ollama serve
 ollama pull gemma3:12b
 ```
 
-Then open [http://localhost:5173](http://localhost:5173), add some questions, and start learning.
+Then open [http://localhost:5175](http://localhost:5175), add some questions, and start learning.
 
 ## Backing Up the Schema
 

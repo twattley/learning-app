@@ -40,6 +40,7 @@ class SubmitAnswer(BaseModel):
 
 class SubmitUnifiedAnswer(BaseModel):
     """Unified answer submission for both regular and math questions."""
+
     question_id: uuid.UUID
     question_type: str  # "regular" or "math"
     user_answer: str  # Text for regular, numeric string for math
@@ -66,6 +67,7 @@ class Review(BaseModel):
 
 class MathTemplateInfo(BaseModel):
     """Info about an available math template."""
+
     type_id: str
     topic: str
     concept: str
@@ -74,6 +76,7 @@ class MathTemplateInfo(BaseModel):
 
 class MathQuestion(BaseModel):
     """A generated math question."""
+
     id: uuid.UUID
     template_type: str
     topic: str
@@ -100,6 +103,7 @@ class MathReview(BaseModel):
 
 class UnifiedReviewResponse(BaseModel):
     """Unified response for both regular and math submissions."""
+
     id: uuid.UUID
     question_type: str  # "regular" or "math"
     user_answer: str

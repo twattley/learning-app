@@ -57,12 +57,18 @@ export default function Learn() {
   };
 
   // Cmd+Enter / Ctrl+Enter to submit, or just Enter for math questions
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>,
+  ) => {
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
       handleSubmit();
     }
     // For math questions, Enter alone submits
-    if (question?.question_type === "math" && e.key === "Enter" && !e.shiftKey) {
+    if (
+      question?.question_type === "math" &&
+      e.key === "Enter" &&
+      !e.shiftKey
+    ) {
       e.preventDefault();
       handleSubmit();
     }
@@ -85,21 +91,43 @@ export default function Learn() {
       {phase === "empty" && (
         <div className="center-state">
           <p>No questions yet.</p>
-          <p style={{ marginTop: 8 }}>Add some in the Questions tab to get started.</p>
+          <p style={{ marginTop: 8 }}>
+            Add some in the Questions tab to get started.
+          </p>
         </div>
       )}
 
       {phase === "error" && (
         <div className="center-state">
-          <p style={{ color: "#f87171", fontWeight: 600, marginBottom: 8 }}>Something went wrong</p>
-          <p style={{ fontSize: 13, marginBottom: 16, maxWidth: 500, textAlign: "center" }}>{error}</p>
-          <button className="btn btn-primary" onClick={loadQuestion}>Try Again</button>
+          <p style={{ color: "#f87171", fontWeight: 600, marginBottom: 8 }}>
+            Something went wrong
+          </p>
+          <p
+            style={{
+              fontSize: 13,
+              marginBottom: 16,
+              maxWidth: 500,
+              textAlign: "center",
+            }}
+          >
+            {error}
+          </p>
+          <button className="btn btn-primary" onClick={loadQuestion}>
+            Try Again
+          </button>
         </div>
       )}
 
       {phase === "question" && question && (
         <div>
-          <div style={{ marginBottom: 16, display: "flex", gap: 8, alignItems: "center" }}>
+          <div
+            style={{
+              marginBottom: 16,
+              display: "flex",
+              gap: 8,
+              alignItems: "center",
+            }}
+          >
             <span className="topic-badge">{question.topic}</span>
             {isMath && (
               <span className="topic-badge" style={{ background: "#7c3aed" }}>
@@ -108,17 +136,27 @@ export default function Learn() {
             )}
           </div>
 
-          <div className="md-content" style={{ fontSize: 18, lineHeight: 1.6, marginBottom: 20 }}>
+          <div
+            className="md-content"
+            style={{ fontSize: 18, lineHeight: 1.6, marginBottom: 20 }}
+          >
             <ReactMarkdown components={markdownComponents}>
               {question.display_text ?? question.question_text ?? ""}
             </ReactMarkdown>
           </div>
 
           {isMath && (
-            <div style={{ marginBottom: 16, display: "flex", gap: 12, alignItems: "flex-start" }}>
+            <div
+              style={{
+                marginBottom: 16,
+                display: "flex",
+                gap: 12,
+                alignItems: "flex-start",
+              }}
+            >
               <Calculator onUseResult={(result) => setUserAnswer(result)} />
               {question.hint && !showHint && (
-                <button 
+                <button
                   className="btn btn-secondary btn-sm"
                   onClick={() => setShowHint(true)}
                 >
@@ -129,14 +167,24 @@ export default function Learn() {
           )}
 
           {showHint && question.hint && (
-            <div className="hint-card" style={{
-              background: "var(--surface)",
-              border: "1px solid #6366f1",
-              borderRadius: "var(--radius)",
-              padding: 16,
-              marginBottom: 16,
-            }}>
-              <div style={{ fontSize: 12, color: "#a5b4fc", marginBottom: 8, fontWeight: 600 }}>
+            <div
+              className="hint-card"
+              style={{
+                background: "var(--surface)",
+                border: "1px solid #6366f1",
+                borderRadius: "var(--radius)",
+                padding: 16,
+                marginBottom: 16,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "#a5b4fc",
+                  marginBottom: 8,
+                  fontWeight: 600,
+                }}
+              >
                 💡 HINT
               </div>
               <div className="md-content" style={{ fontSize: 14 }}>
@@ -190,15 +238,20 @@ export default function Learn() {
           {review.question_type === "math" ? (
             <div className="score-row">
               <span className="score-label">Result</span>
-              <span 
-                className="score-value" 
+              <span
+                className="score-value"
                 style={{ color: review.is_correct ? "#4ade80" : "#f87171" }}
               >
                 {review.is_correct ? "✓ Correct!" : "✗ Incorrect"}
               </span>
               {review.correct_answer != null && !review.is_correct && (
-                <span style={{ marginLeft: 16, color: "#94a3b8", fontSize: 14 }}>
-                  Correct answer: <strong style={{ color: "#f8fafc" }}>{review.correct_answer.toPrecision(4)}</strong>
+                <span
+                  style={{ marginLeft: 16, color: "#94a3b8", fontSize: 14 }}
+                >
+                  Correct answer:{" "}
+                  <strong style={{ color: "#f8fafc" }}>
+                    {review.correct_answer.toPrecision(4)}
+                  </strong>
                 </span>
               )}
             </div>
@@ -233,7 +286,19 @@ const markdownComponents = {
     const inline = !match && !className;
 
     if (inline) {
-      return <code style={{ background: "#334155", padding: "2px 6px", borderRadius: 4, fontSize: "0.9em" }} {...props}>{children}</code>;
+      return (
+        <code
+          style={{
+            background: "#334155",
+            padding: "2px 6px",
+            borderRadius: 4,
+            fontSize: "0.9em",
+          }}
+          {...props}
+        >
+          {children}
+        </code>
+      );
     }
 
     return (

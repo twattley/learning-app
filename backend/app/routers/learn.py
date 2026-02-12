@@ -6,7 +6,12 @@ from fastapi import APIRouter, HTTPException, Query
 from app.config import settings
 from app.database import get_pool
 from app.schemas import Review, SubmitAnswer, SubmitUnifiedAnswer, UnifiedReviewResponse
-from app.services.llm import get_feedback, rephrase_question, generate_math_word_problem, get_math_feedback
+from app.services.llm import (
+    get_feedback,
+    rephrase_question,
+    generate_math_word_problem,
+    get_math_feedback,
+)
 from app.services.spaced_repetition import calculate_next_review, calculate_math_review
 from app.services.math_problems import (
     MATH_TEMPLATES,
@@ -25,7 +30,7 @@ router = APIRouter(prefix="/learn", tags=["learn"])
 async def next_question(topic: str | None = Query(None)):
     """
     Get the next question for review — randomly mixes regular Q&A and math problems.
-    
+
     Uses spaced repetition to prioritize what's due, with true random interleaving
     between question types for optimal learning.
     """
@@ -56,14 +61,16 @@ async def next_question(topic: str | None = Query(None)):
             LIMIT 1
             """
         )
-    
+
     if regular_row:
         candidates.append(("regular", regular_row["id"], regular_row["next_review_at"]))
 
     # Check for due math templates
-    math_templates = get_templates_by_topic(topic) if topic else list(MATH_TEMPLATES.values())
+    math_templates = (
+        get_templates_by_topic(topic) if topic else list(MATH_TEMPLATES.values())
+    )
     template_ids = [t.type_id for t in math_templates]
-    
+
     if template_ids:
         math_row = await pool.fetchrow(
             """
@@ -75,9 +82,11 @@ async def next_question(topic: str | None = Query(None)):
             """,
             template_ids,
         )
-        
+
         if math_row:
-            candidates.append(("math", math_row["template_type"], math_row["next_review_at"]))
+            candidates.append(
+                ("math", math_row["template_type"], math_row["next_review_at"])
+            )
         else:
             # Check for untried math templates (they're always "due")
             tried = await pool.fetch(
@@ -101,10 +110,10 @@ async def next_question(topic: str | None = Query(None)):
             random_regular = await pool.fetchrow(
                 "SELECT id FROM questions ORDER BY random() LIMIT 1"
             )
-        
+
         if random_regular:
             candidates.append(("regular", random_regular["id"], None))
-        
+
         # Random math template
         if template_ids:
             candidates.append(("math", random.choice(template_ids), None))
@@ -124,7 +133,7 @@ async def next_question(topic: str | None = Query(None)):
 async def _get_regular_question(pool, question_id):
     """Fetch and format a regular question."""
     row = await pool.fetchrow("SELECT * FROM questions WHERE id = $1", question_id)
-    
+
     if not row:
         raise HTTPException(404, "Question not found")
 
@@ -138,7 +147,7 @@ async def _get_regular_question(pool, question_id):
 
     # Don't leak the answer
     question.pop("answer_text", None)
-    
+
     # Add type indicator for frontend
     question["question_type"] = "regular"
 
@@ -153,10 +162,10 @@ async def _generate_math_question(pool, template_type: str):
 
     # Generate random parameters
     params = generate_params(template)
-    
+
     # Compute the correct answer
     correct_answer = compute_answer(template, params)
-    
+
     # Generate creative word problem via Gemini
     display_text = await generate_math_word_problem(
         concept=template.concept,
@@ -164,7 +173,7 @@ async def _generate_math_question(pool, template_type: str):
         asks_for=template.asks_for,
         example=template.example,
     )
-    
+
     # Store in database
     row = await pool.fetchrow(
         """
@@ -178,7 +187,7 @@ async def _generate_math_question(pool, template_type: str):
         correct_answer,
         display_text,
     )
-    
+
     return {
         "id": row["id"],
         "question_type": "math",
@@ -195,7 +204,7 @@ async def _generate_math_question(pool, template_type: str):
 async def get_review_stats(topic: str | None = Query(None)):
     """Get spaced repetition statistics."""
     pool = await get_pool()
-    
+
     if topic:
         stats = await pool.fetchrow(
             """
@@ -222,7 +231,7 @@ async def get_review_stats(topic: str | None = Query(None)):
             FROM questions
             """
         )
-    
+
     return dict(stats)
 
 
@@ -230,8 +239,8 @@ async def get_review_stats(topic: str | None = Query(None)):
 async def submit_answer(body: SubmitUnifiedAnswer):
     """
     Submit an answer for either a regular or math question.
-    
-    Automatically routes based on question_type, gets LLM feedback, 
+
+    Automatically routes based on question_type, gets LLM feedback,
     updates spaced repetition, and stores the review.
     """
     pool = await get_pool()
@@ -242,7 +251,9 @@ async def submit_answer(body: SubmitUnifiedAnswer):
         return await _submit_regular_answer(pool, body)
 
 
-async def _submit_regular_answer(pool, body: SubmitUnifiedAnswer) -> UnifiedReviewResponse:
+async def _submit_regular_answer(
+    pool, body: SubmitUnifiedAnswer
+) -> UnifiedReviewResponse:
     """Handle regular question submission."""
     # Fetch the question
     row = await pool.fetchrow("SELECT * FROM questions WHERE id = $1", body.question_id)

@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getQuestion, createQuestion, updateQuestion, refineQuestion } from "../lib/api";
+import {
+  getQuestion,
+  createQuestion,
+  updateQuestion,
+  refineQuestion,
+} from "../lib/api";
 
 export default function QuestionForm() {
   const { id } = useParams<{ id?: string }>();
@@ -80,7 +85,10 @@ export default function QuestionForm() {
       e.preventDefault();
       const el = e.currentTarget;
       const start = el.selectionStart;
-      el.value = el.value.substring(0, start) + "  " + el.value.substring(el.selectionEnd);
+      el.value =
+        el.value.substring(0, start) +
+        "  " +
+        el.value.substring(el.selectionEnd);
       el.selectionStart = el.selectionEnd = start + 2;
     }
   };
@@ -93,7 +101,11 @@ export default function QuestionForm() {
   };
 
   if (loading) {
-    return <div className="center-state"><div className="spinner" /></div>;
+    return (
+      <div className="center-state">
+        <div className="spinner" />
+      </div>
+    );
   }
 
   return (
@@ -123,11 +135,16 @@ export default function QuestionForm() {
           onChange={(e) => setQuestionText(e.target.value)}
           onKeyDown={handleTab}
         />
-        <div className="form-hint">Markdown supported. Use triple backticks for code blocks. Cmd+Enter to save.</div>
+        <div className="form-hint">
+          Markdown supported. Use triple backticks for code blocks. Cmd+Enter to
+          save.
+        </div>
       </div>
 
       <div className="form-group">
-        <label>Reference Answer <span className="optional">(optional)</span></label>
+        <label>
+          Reference Answer <span className="optional">(optional)</span>
+        </label>
         <textarea
           className="textarea"
           placeholder="The ideal answer — leave blank to let the LLM grade solo"
@@ -139,11 +156,11 @@ export default function QuestionForm() {
       </div>
 
       <div style={{ marginTop: 16, marginBottom: 8 }}>
-        <button 
-          className="btn btn-secondary" 
+        <button
+          className="btn btn-secondary"
           disabled={refining || !questionText.trim()}
           onClick={handleRefine}
-          style={{ 
+          style={{
             background: "#6366f1",
             display: "flex",
             alignItems: "center",
@@ -152,7 +169,10 @@ export default function QuestionForm() {
         >
           {refining ? (
             <>
-              <span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} />
+              <span
+                className="spinner"
+                style={{ width: 14, height: 14, borderWidth: 2 }}
+              />
               Refining…
             </>
           ) : (
@@ -165,10 +185,17 @@ export default function QuestionForm() {
       </div>
 
       <div style={{ display: "flex", gap: 12, marginTop: 24 }}>
-        <button className="btn btn-secondary" onClick={() => navigate("/questions")}>
+        <button
+          className="btn btn-secondary"
+          onClick={() => navigate("/questions")}
+        >
           Cancel
         </button>
-        <button className="btn btn-primary" disabled={saving} onClick={handleSave}>
+        <button
+          className="btn btn-primary"
+          disabled={saving}
+          onClick={handleSave}
+        >
           {saving ? "Saving…" : isEditing ? "Update" : "Create"}
         </button>
       </div>

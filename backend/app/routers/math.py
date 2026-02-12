@@ -4,6 +4,7 @@ Math learning endpoints.
 Generates dynamic math problems using templates + LLM word problem generation.
 Uses spaced repetition at the template level (since questions are generated fresh).
 """
+
 import json
 import uuid
 from datetime import datetime
@@ -34,7 +35,7 @@ async def list_templates(topic: str | None = Query(None)):
         templates = [t for t in MATH_TEMPLATES.values() if t.topic == topic]
     else:
         templates = list(MATH_TEMPLATES.values())
-    
+
     return [
         MathTemplateInfo(
             type_id=t.type_id,
@@ -60,13 +61,13 @@ async def next_math_question(
 ):
     """
     Generate a new math question.
-    
+
     Prioritizes templates that are due for review based on spaced repetition.
-    Optionally filter by topic (e.g., "probability", "finance") or 
+    Optionally filter by topic (e.g., "probability", "finance") or
     specific template_type (e.g., "poisson_pmf").
     """
     pool = await get_pool()
-    
+
     # Get template - either specified, due for review, or random
     if template_type:
         template = get_template(template_type)
@@ -79,7 +80,7 @@ async def next_math_question(
             template_ids = [t.type_id for t in available_templates]
         else:
             template_ids = list(MATH_TEMPLATES.keys())
-        
+
         # Find a template that's due for review
         due_row = await pool.fetchrow(
             """
@@ -90,7 +91,7 @@ async def next_math_question(
             """,
             template_ids,
         )
-        
+
         if due_row:
             template = get_template(due_row["template_type"])
         else:
@@ -101,22 +102,22 @@ async def next_math_question(
             )
             tried = {r["template_type"] for r in tried_row}
             untried = [t for t in template_ids if t not in tried]
-            
+
             if untried:
                 template = get_template(untried[0])
             else:
                 template = get_random_template(topic)
-    
+
     # Ensure we have a valid template
     if not template:
         raise HTTPException(500, "Failed to select a math template")
-    
+
     # Generate random parameters
     params = generate_params(template)
-    
+
     # Compute the correct answer
     correct_answer = compute_answer(template, params)
-    
+
     # Generate creative word problem via Gemini
     display_text = await generate_math_word_problem(
         concept=template.concept,
@@ -124,7 +125,7 @@ async def next_math_question(
         asks_for=template.asks_for,
         example=template.example,
     )
-    
+
     # Store in database
     row = await pool.fetchrow(
         """
@@ -138,7 +139,7 @@ async def next_math_question(
         correct_answer,
         display_text,
     )
-    
+
     return MathQuestion(
         id=row["id"],
         template_type=row["template_type"],
@@ -153,7 +154,7 @@ async def next_math_question(
 async def submit_math_answer(body: SubmitMathAnswer):
     """Submit an answer to a math question, get feedback, update spaced repetition."""
     pool = await get_pool()
-    
+
     # Fetch the question
     row = await pool.fetchrow(
         "SELECT * FROM math_questions WHERE id = $1",
@@ -161,18 +162,18 @@ async def submit_math_answer(body: SubmitMathAnswer):
     )
     if not row:
         raise HTTPException(404, "Math question not found")
-    
+
     template = get_template(row["template_type"])
     if not template:
         raise HTTPException(500, f"Unknown template type: {row['template_type']}")
-    
+
     # Grade the answer
     grade = grade_math_answer(
         user_answer=body.user_answer,
         correct_answer=row["correct_answer"],
         tolerance=template.tolerance,
     )
-    
+
     # Get LLM feedback
     feedback = await get_math_feedback(
         question=row["display_text"],
@@ -181,14 +182,14 @@ async def submit_math_answer(body: SubmitMathAnswer):
         user_answer=body.user_answer,
         is_correct=grade["is_correct"],
     )
-    
+
     # Update template progress for spaced repetition
     # First, get or create the progress record
     progress = await pool.fetchrow(
         "SELECT * FROM math_template_progress WHERE template_type = $1",
         row["template_type"],
     )
-    
+
     if progress:
         sr_result = calculate_math_review(
             is_correct=grade["is_correct"],
@@ -231,7 +232,7 @@ async def submit_math_answer(body: SubmitMathAnswer):
             sr_result.next_review_at,
             1 if grade["is_correct"] else 0,
         )
-    
+
     # Store the review
     review_row = await pool.fetchrow(
         """
@@ -244,7 +245,7 @@ async def submit_math_answer(body: SubmitMathAnswer):
         grade["is_correct"],
         feedback,
     )
-    
+
     return MathReview(
         id=review_row["id"],
         math_question_id=review_row["math_question_id"],
@@ -260,7 +261,7 @@ async def submit_math_answer(body: SubmitMathAnswer):
 async def get_math_history(limit: int = Query(20, le=100)):
     """Get recent math question attempts."""
     pool = await get_pool()
-    
+
     rows = await pool.fetch(
         """
         SELECT 
@@ -280,7 +281,7 @@ async def get_math_history(limit: int = Query(20, le=100)):
         """,
         limit,
     )
-    
+
     return [
         {
             "id": r["id"],
@@ -301,7 +302,7 @@ async def get_math_history(limit: int = Query(20, le=100)):
 async def get_math_stats(topic: str | None = Query(None)):
     """Get spaced repetition statistics for math templates."""
     pool = await get_pool()
-    
+
     # Get progress for all templates
     rows = await pool.fetch(
         """
@@ -316,60 +317,74 @@ async def get_math_stats(topic: str | None = Query(None)):
         ORDER BY next_review_at ASC
         """
     )
-    
+
     # Also get templates with no attempts
     template_ids = list(MATH_TEMPLATES.keys())
     if topic:
         template_ids = [t.type_id for t in get_templates_by_topic(topic)]
-    
+
     attempted = {r["template_type"] for r in rows}
-    
+
     progress_list = []
     for r in rows:
         if topic and r["template_type"] not in template_ids:
             continue
         template = get_template(r["template_type"])
-        progress_list.append({
-            "template_type": r["template_type"],
-            "concept": template.concept if template else "Unknown",
-            "topic": template.topic if template else "Unknown",
-            "ease_factor": r["ease_factor"],
-            "interval_days": r["interval_days"],
-            "next_review_at": r["next_review_at"],
-            "total_attempts": r["total_attempts"],
-            "correct_attempts": r["correct_attempts"],
-            "accuracy": r["correct_attempts"] / r["total_attempts"] if r["total_attempts"] > 0 else 0,
-            "is_due": r["next_review_at"] <= datetime.now() if r["next_review_at"] else True,
-        })
-    
+        progress_list.append(
+            {
+                "template_type": r["template_type"],
+                "concept": template.concept if template else "Unknown",
+                "topic": template.topic if template else "Unknown",
+                "ease_factor": r["ease_factor"],
+                "interval_days": r["interval_days"],
+                "next_review_at": r["next_review_at"],
+                "total_attempts": r["total_attempts"],
+                "correct_attempts": r["correct_attempts"],
+                "accuracy": (
+                    r["correct_attempts"] / r["total_attempts"]
+                    if r["total_attempts"] > 0
+                    else 0
+                ),
+                "is_due": (
+                    r["next_review_at"] <= datetime.now()
+                    if r["next_review_at"]
+                    else True
+                ),
+            }
+        )
+
     # Add templates never attempted
     for tid in template_ids:
         if tid not in attempted:
             template = get_template(tid)
-            progress_list.append({
-                "template_type": tid,
-                "concept": template.concept if template else "Unknown",
-                "topic": template.topic if template else "Unknown",
-                "ease_factor": 2.5,
-                "interval_days": 0,
-                "next_review_at": None,
-                "total_attempts": 0,
-                "correct_attempts": 0,
-                "accuracy": 0,
-                "is_due": True,  # Never tried = due
-            })
-    
+            progress_list.append(
+                {
+                    "template_type": tid,
+                    "concept": template.concept if template else "Unknown",
+                    "topic": template.topic if template else "Unknown",
+                    "ease_factor": 2.5,
+                    "interval_days": 0,
+                    "next_review_at": None,
+                    "total_attempts": 0,
+                    "correct_attempts": 0,
+                    "accuracy": 0,
+                    "is_due": True,  # Never tried = due
+                }
+            )
+
     # Summary stats
     total_attempts = sum(p["total_attempts"] for p in progress_list)
     correct_attempts = sum(p["correct_attempts"] for p in progress_list)
     due_count = sum(1 for p in progress_list if p["is_due"])
-    
+
     return {
         "templates": progress_list,
         "summary": {
             "total_templates": len(progress_list),
             "templates_due": due_count,
             "total_attempts": total_attempts,
-            "overall_accuracy": correct_attempts / total_attempts if total_attempts > 0 else 0,
-        }
+            "overall_accuracy": (
+                correct_attempts / total_attempts if total_attempts > 0 else 0
+            ),
+        },
     }

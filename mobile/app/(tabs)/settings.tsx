@@ -13,7 +13,10 @@ import { getApiUrl, setApiUrl, testApiConnection } from "../../lib/storage";
 export default function SettingsScreen() {
   const [url, setUrl] = useState("");
   const [testing, setTesting] = useState(false);
-  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [testResult, setTestResult] = useState<{
+    success: boolean;
+    message: string;
+  } | null>(null);
 
   useEffect(() => {
     getApiUrl().then(setUrl);
@@ -29,13 +32,16 @@ export default function SettingsScreen() {
 
   const handleSave = async () => {
     await setApiUrl(url);
-    Alert.alert("Saved", "API URL saved. Restart the app for changes to take effect.");
+    Alert.alert(
+      "Saved",
+      "API URL saved. Restart the app for changes to take effect.",
+    );
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>API Configuration</Text>
-      
+
       <Text style={styles.label}>API Base URL</Text>
       <TextInput
         style={styles.input}
@@ -70,13 +76,19 @@ export default function SettingsScreen() {
       </View>
 
       {testResult && (
-        <View style={[styles.resultBox, testResult.success ? styles.successBox : styles.errorBox]}>
+        <View
+          style={[
+            styles.resultBox,
+            testResult.success ? styles.successBox : styles.errorBox,
+          ]}
+        >
           <Text style={styles.resultText}>{testResult.message}</Text>
         </View>
       )}
 
       <Text style={styles.hint}>
-        Use your Tailscale hostname (e.g., "server") instead of "localhost" when running on a physical device.
+        Use your Tailscale hostname (e.g., "server") instead of "localhost" when
+        running on a physical device.
       </Text>
     </View>
   );

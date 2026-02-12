@@ -12,13 +12,17 @@ def _get_client() -> AsyncOpenAI:
     if _client is None:
         print(f"[LLM] Initializing client with provider: {settings.llm_provider}")
         if settings.llm_provider == "gemini":
-            print(f"[LLM] Using Gemini at generativelanguage.googleapis.com, model: {settings.gemini_model}")
+            print(
+                f"[LLM] Using Gemini at generativelanguage.googleapis.com, model: {settings.gemini_model}"
+            )
             _client = AsyncOpenAI(
                 base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
                 api_key=settings.gemini_api_key,
             )
         elif settings.llm_provider == "ollama":
-            print(f"[LLM] Using Ollama at {settings.ollama_base_url}, model: {settings.ollama_model}")
+            print(
+                f"[LLM] Using Ollama at {settings.ollama_base_url}, model: {settings.ollama_model}"
+            )
             _client = AsyncOpenAI(
                 base_url=settings.ollama_base_url,
                 api_key="ollama",
@@ -41,7 +45,9 @@ def _get_gemini_client() -> AsyncOpenAI:
     """Return a dedicated Gemini client for math problems (always uses Gemini)."""
     global _gemini_client
     if _gemini_client is None:
-        print(f"[LLM] Initializing Gemini client for math problems, model: {settings.gemini_model}")
+        print(
+            f"[LLM] Initializing Gemini client for math problems, model: {settings.gemini_model}"
+        )
         _gemini_client = AsyncOpenAI(
             base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
             api_key=settings.gemini_api_key,
@@ -76,7 +82,9 @@ async def get_feedback(
     if answer_text:
         reference_block = f"The reference answer is:\n{answer_text}\n"
     else:
-        reference_block = "There is no reference answer. Use your own knowledge to evaluate."
+        reference_block = (
+            "There is no reference answer. Use your own knowledge to evaluate."
+        )
 
     system = FEEDBACK_SYSTEM_PROMPT.format(reference_block=reference_block)
 
@@ -118,7 +126,9 @@ def _parse_feedback(raw: str) -> dict:
         upper = line.strip().upper()
         if upper.startswith("SCORE:"):
             try:
-                result["score"] = int("".join(c for c in line.split(":", 1)[1] if c.isdigit())[:1])
+                result["score"] = int(
+                    "".join(c for c in line.split(":", 1)[1] if c.isdigit())[:1]
+                )
             except (ValueError, IndexError):
                 pass
         elif upper.startswith("VERDICT:"):
@@ -173,23 +183,23 @@ async def generate_math_word_problem(
     """Generate a creative word problem for a math concept using Gemini."""
     # Format params nicely
     params_str = ", ".join(f"{k} = {v}" for k, v in params.items())
-    
+
     prompt = MATH_WORD_PROBLEM_PROMPT.format(
         concept=concept,
         params=params_str,
         asks_for=asks_for,
         example=example,
     )
-    
+
     print(f"[LLM] Generating math word problem via Gemini for: {concept}")
-    
+
     response = await _get_gemini_client().chat.completions.create(
         model=settings.gemini_model,
         messages=[{"role": "user", "content": prompt}],
         temperature=0.8,  # Higher temp for creativity
         max_tokens=300,
     )
-    
+
     return (response.choices[0].message.content or "").strip()
 
 
@@ -202,7 +212,7 @@ async def get_math_feedback(
 ) -> str:
     """Generate feedback for a math answer using Gemini."""
     result = "CORRECT ✓" if is_correct else "INCORRECT ✗"
-    
+
     prompt = MATH_FEEDBACK_PROMPT.format(
         question=question,
         concept=concept,
@@ -210,14 +220,14 @@ async def get_math_feedback(
         user_answer=user_answer,
         result=result,
     )
-    
+
     response = await _get_gemini_client().chat.completions.create(
         model=settings.gemini_model,
         messages=[{"role": "user", "content": prompt}],
         temperature=0.3,
         max_tokens=200,
     )
-    
+
     return (response.choices[0].message.content or "").strip()
 
 
@@ -266,18 +276,22 @@ async def refine_qa(topic: str, question: str, answer: str) -> dict:
     prompt = REFINE_QA_PROMPT.format(
         topic=topic,
         question=question,
-        answer=answer if answer else "(no answer provided — generate a good reference answer)",
+        answer=(
+            answer
+            if answer
+            else "(no answer provided — generate a good reference answer)"
+        ),
     )
-    
+
     print(f"[LLM] Refining Q&A via Gemini for topic: {topic}")
-    
+
     response = await _get_gemini_client().chat.completions.create(
         model=settings.gemini_model,
         messages=[{"role": "user", "content": prompt}],
         temperature=0.4,
         max_tokens=1000,
     )
-    
+
     raw = (response.choices[0].message.content or "").strip()
     return _parse_refined_qa(raw, question, answer)
 
@@ -289,16 +303,16 @@ def _parse_refined_qa(raw: str, original_question: str, original_answer: str) ->
         "answer": original_answer,
         "raw": raw,
     }
-    
+
     # Split by QUESTION: and ANSWER: markers
     if "QUESTION:" in raw and "ANSWER:" in raw:
         parts = raw.split("ANSWER:", 1)
         question_part = parts[0].replace("QUESTION:", "").strip()
         answer_part = parts[1].strip() if len(parts) > 1 else ""
-        
+
         if question_part:
             result["question"] = question_part
         if answer_part:
             result["answer"] = answer_part
-    
+
     return result

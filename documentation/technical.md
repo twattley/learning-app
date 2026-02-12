@@ -7,14 +7,14 @@
 ```
 ┌──────────────┐    ┌──────────────┐    ┌────────────────┐
 │  Web (React) │    │ Mobile (Expo)│    │   Ollama       │
-│  :5173       │    │  Expo Go     │    │   (local LLM)  │
+│  :5175       │    │  Expo Go     │    │   (local LLM)  │
 └──────┬───────┘    └──────┬───────┘    └───────┬────────┘
        │   /api proxy      │ Tailscale          │ :11434
        └───────────┬───────┘                    │
                    │                            │
             ┌──────▼──────┐                     │
             │   FastAPI   │◄────────────────────┘
-            │   :8000     │
+            │   :8002     │
             └──────┬──────┘──────────► Gemini API (cloud)
                    │
             ┌──────▼──────┐
@@ -83,6 +83,7 @@ learning_app/
 ## Backend
 
 ### Stack
+
 - **Python 3.11+**
 - **FastAPI** — async web framework
 - **asyncpg** — async PostgreSQL driver (raw SQL, no ORM)
@@ -94,15 +95,15 @@ learning_app/
 
 All config via environment variables with `RECALL_` prefix:
 
-| Variable | Default | Description |
-|---|---|---|
-| `RECALL_DATABASE_URL` | `postgresql://localhost:5432/recall` | PostgreSQL connection string |
-| `RECALL_REPHRASE_QUESTIONS` | `false` | Rephrase questions each time they're shown |
-| `RECALL_LLM_PROVIDER` | `gemini` | Provider for regular Q&A grading: `gemini`, `openai`, or `ollama` |
-| `RECALL_GEMINI_API_KEY` | | Google AI API key (always needed for math + refinement) |
-| `RECALL_GEMINI_MODEL` | `gemini-2.0-flash` | Gemini model name |
-| `RECALL_OLLAMA_BASE_URL` | `http://localhost:11434/v1` | Ollama API endpoint |
-| `RECALL_OLLAMA_MODEL` | `llama3` | Ollama model (currently using `gemma3:12b`) |
+| Variable                    | Default                              | Description                                                       |
+| --------------------------- | ------------------------------------ | ----------------------------------------------------------------- |
+| `RECALL_DATABASE_URL`       | `postgresql://localhost:5432/recall` | PostgreSQL connection string                                      |
+| `RECALL_REPHRASE_QUESTIONS` | `false`                              | Rephrase questions each time they're shown                        |
+| `RECALL_LLM_PROVIDER`       | `gemini`                             | Provider for regular Q&A grading: `gemini`, `openai`, or `ollama` |
+| `RECALL_GEMINI_API_KEY`     |                                      | Google AI API key (always needed for math + refinement)           |
+| `RECALL_GEMINI_MODEL`       | `gemini-2.0-flash`                   | Gemini model name                                                 |
+| `RECALL_OLLAMA_BASE_URL`    | `http://localhost:11434/v1`          | Ollama API endpoint                                               |
+| `RECALL_OLLAMA_MODEL`       | `llama3`                             | Ollama model (currently using `gemma3:12b`)                       |
 
 Loaded from `.env` file in `backend/` directory.
 
@@ -112,31 +113,31 @@ All routes prefixed with `/api/v1`.
 
 #### Questions (`/api/v1/questions`)
 
-| Method | Path | Description |
-|---|---|---|
-| `POST` | `/questions` | Create a question |
-| `GET` | `/questions` | List all (optional `?topic=`) |
-| `GET` | `/questions/{id}` | Get single question |
-| `PUT` | `/questions/{id}` | Update question |
-| `DELETE` | `/questions/{id}` | Delete question |
-| `POST` | `/questions/refine` | Refine Q&A pair via Gemini |
+| Method   | Path                | Description                   |
+| -------- | ------------------- | ----------------------------- |
+| `POST`   | `/questions`        | Create a question             |
+| `GET`    | `/questions`        | List all (optional `?topic=`) |
+| `GET`    | `/questions/{id}`   | Get single question           |
+| `PUT`    | `/questions/{id}`   | Update question               |
+| `DELETE` | `/questions/{id}`   | Delete question               |
+| `POST`   | `/questions/refine` | Refine Q&A pair via Gemini    |
 
 #### Learn (`/api/v1/learn`)
 
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/learn/next` | Get next question (interleaved, SR-prioritised) |
+| Method | Path            | Description                                       |
+| ------ | --------------- | ------------------------------------------------- |
+| `GET`  | `/learn/next`   | Get next question (interleaved, SR-prioritised)   |
 | `POST` | `/learn/submit` | Submit answer (routes to regular or math grading) |
-| `GET` | `/learn/stats` | Spaced repetition statistics |
+| `GET`  | `/learn/stats`  | Spaced repetition statistics                      |
 
 #### Math (`/api/v1/math`)
 
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/math/templates` | List available math templates |
-| `GET` | `/math/topics` | List math topics |
-| `GET` | `/math/next` | Generate a math question (standalone) |
-| `POST` | `/math/submit` | Submit math answer (standalone) |
+| Method | Path              | Description                           |
+| ------ | ----------------- | ------------------------------------- |
+| `GET`  | `/math/templates` | List available math templates         |
+| `GET`  | `/math/topics`    | List math topics                      |
+| `GET`  | `/math/next`      | Generate a math question (standalone) |
+| `POST` | `/math/submit`    | Submit math answer (standalone)       |
 
 ### LLM Architecture (`app/services/llm.py`)
 
@@ -154,17 +155,18 @@ All clients use the OpenAI-compatible API format (Gemini and Ollama both support
 
 #### Prompts
 
-| Prompt | Purpose | Client |
-|---|---|---|
-| `FEEDBACK_SYSTEM_PROMPT` | Grade regular Q&A (score 1-5, verdict, missing, tip) | Primary |
-| `REPHRASE_SYSTEM_PROMPT` | Rephrase question keeping same meaning | Primary |
-| `MATH_WORD_PROBLEM_PROMPT` | Generate creative word problem from template params | Gemini |
-| `MATH_FEEDBACK_PROMPT` | Brief feedback on math answer | Gemini |
-| `REFINE_QA_PROMPT` | Transform rough notes into comprehensive study material | Gemini |
+| Prompt                     | Purpose                                                 | Client  |
+| -------------------------- | ------------------------------------------------------- | ------- |
+| `FEEDBACK_SYSTEM_PROMPT`   | Grade regular Q&A (score 1-5, verdict, missing, tip)    | Primary |
+| `REPHRASE_SYSTEM_PROMPT`   | Rephrase question keeping same meaning                  | Primary |
+| `MATH_WORD_PROBLEM_PROMPT` | Generate creative word problem from template params     | Gemini  |
+| `MATH_FEEDBACK_PROMPT`     | Brief feedback on math answer                           | Gemini  |
+| `REFINE_QA_PROMPT`         | Transform rough notes into comprehensive study material | Gemini  |
 
 ### Math Problem Service (`app/services/math_problems.py`)
 
 Template-based system — each template defines:
+
 - **Parameter ranges** (e.g., λ between 2-20 for Poisson)
 - **Computation function** (uses scipy for exact answers)
 - **Tolerance** for grading (e.g., 0.01 for probabilities, 1.0 for money)
@@ -172,20 +174,20 @@ Template-based system — each template defines:
 
 Current templates (12 total):
 
-| Template | Topic | Computation |
-|---|---|---|
-| `poisson_pmf` | probability | `scipy.stats.poisson.pmf` |
-| `poisson_cdf` | probability | `scipy.stats.poisson.cdf` |
-| `poisson_survival` | probability | `scipy.stats.poisson.sf` |
-| `binomial_pmf` | probability | `scipy.stats.binom.pmf` |
-| `binomial_cdf` | probability | `scipy.stats.binom.cdf` |
-| `normal_cdf` | probability | `scipy.stats.norm.cdf` |
-| `normal_zscore` | probability | `(x - μ) / σ` |
-| `exponential_cdf` | probability | `scipy.stats.expon.cdf` |
-| `exponential_survival` | probability | `scipy.stats.expon.sf` |
-| `present_value` | finance | `FV / (1 + r)^n` |
-| `future_value` | finance | `PV × (1 + r)^n` |
-| `compound_interest` | finance | `P × (1 + r/n)^(nt)` |
+| Template               | Topic       | Computation               |
+| ---------------------- | ----------- | ------------------------- |
+| `poisson_pmf`          | probability | `scipy.stats.poisson.pmf` |
+| `poisson_cdf`          | probability | `scipy.stats.poisson.cdf` |
+| `poisson_survival`     | probability | `scipy.stats.poisson.sf`  |
+| `binomial_pmf`         | probability | `scipy.stats.binom.pmf`   |
+| `binomial_cdf`         | probability | `scipy.stats.binom.cdf`   |
+| `normal_cdf`           | probability | `scipy.stats.norm.cdf`    |
+| `normal_zscore`        | probability | `(x - μ) / σ`             |
+| `exponential_cdf`      | probability | `scipy.stats.expon.cdf`   |
+| `exponential_survival` | probability | `scipy.stats.expon.sf`    |
+| `present_value`        | finance     | `FV / (1 + r)^n`          |
+| `future_value`         | finance     | `PV × (1 + r)^n`          |
+| `compound_interest`    | finance     | `P × (1 + r/n)^(nt)`      |
 
 Flow: template → `generate_params()` → `compute_answer()` → LLM generates word problem → store in DB.
 
@@ -194,6 +196,7 @@ Flow: template → `generate_params()` → `compute_answer()` → LLM generates 
 SM-2 algorithm variant:
 
 **For regular questions (score 1-5):**
+
 - Score < 3: Reset interval, review in 10 minutes
 - First success: 1 day interval
 - Second success: 3 day interval
@@ -202,6 +205,7 @@ SM-2 algorithm variant:
 - Maximum interval: 365 days
 
 **For math templates (binary correct/incorrect):**
+
 - Correct maps to score 4, incorrect to score 2
 - Same interval progression logic
 - Tracked per template type, not per generated question
@@ -218,6 +222,7 @@ The `/learn/next` endpoint is the core of the learning experience:
 6. For math: generate fresh params, compute answer, generate word problem via LLM, store, return
 
 The `/learn/submit` endpoint:
+
 1. Routes based on `question_type` field
 2. Regular: LLM grades → parse score → update SR → store review
 3. Math: parse numeric answer → scipy grades → LLM feedback → update template SR → store review
@@ -286,6 +291,7 @@ The `/learn/submit` endpoint:
 | `correct_attempts` | `int` | |
 
 #### Key Indexes
+
 - `idx_questions_topic` — filter by topic
 - `idx_questions_next_review` — find due questions
 - `idx_math_progress_next_review` — find due templates
@@ -295,30 +301,33 @@ The `/learn/submit` endpoint:
 ## Web Frontend
 
 ### Stack
+
 - **React 19** with TypeScript
-- **Vite** — dev server with API proxy to `:8000`
+- **Vite** — dev server with API proxy to `:8002`
 - **react-router-dom v7** — client-side routing
 - **react-markdown** + **react-syntax-highlighter** — rich feedback display
 - **mathjs** — expression evaluator for the calculator
 
 ### Pages
 
-| Route | Component | Description |
-|---|---|---|
-| `/` | `Learn.tsx` | Main learning interface |
-| `/questions` | `Questions.tsx` | Question list with topic filter |
-| `/questions/new` | `QuestionForm.tsx` | Create question with Gemini refinement |
-| `/questions/:id/edit` | `QuestionForm.tsx` | Edit existing question |
+| Route                 | Component          | Description                            |
+| --------------------- | ------------------ | -------------------------------------- |
+| `/`                   | `Learn.tsx`        | Main learning interface                |
+| `/questions`          | `Questions.tsx`    | Question list with topic filter        |
+| `/questions/new`      | `QuestionForm.tsx` | Create question with Gemini refinement |
+| `/questions/:id/edit` | `QuestionForm.tsx` | Edit existing question                 |
 
 ### Key Components
 
 **`Calculator.tsx`** — In-app expression evaluator for math questions
+
 - Uses mathjs `evaluate()` for arbitrary expressions
 - Symbol buttons: `^`, `√`, `n!`, `e^x`, `ln`, `(`, `)`, `/`, `×`
 - History with clickable results (fills answer input)
 - Only shown for math questions
 
 **`Learn.tsx`** — Main learning screen
+
 - Detects question type (regular vs math)
 - Regular: textarea input, Cmd+Enter to submit
 - Math: number input, Enter to submit, calculator + hint button
@@ -326,6 +335,7 @@ The `/learn/submit` endpoint:
 - For math: shows correct answer on incorrect attempts
 
 **`QuestionForm.tsx`** — Question creation/editing
+
 - Topic, question, and answer text fields with markdown support
 - "✨ Refine with Gemini" button to polish Q&A via API
 - Tab key inserts spaces in textareas
@@ -348,13 +358,14 @@ interface Question {
 interface Review {
   question_type: "regular" | "math";
   llm_feedback: string;
-  score: number | null;       // regular
-  is_correct?: boolean;       // math
-  correct_answer?: number;    // math
+  score: number | null; // regular
+  is_correct?: boolean; // math
+  correct_answer?: number; // math
 }
 ```
 
 ### Styling
+
 - Single `index.css` file, CSS custom properties
 - Dark theme (slate palette: `--bg: #0f172a`, `--surface: #1e293b`)
 - No CSS framework — custom classes
@@ -362,20 +373,23 @@ interface Review {
 ## Mobile Frontend
 
 ### Stack
+
 - **React Native** with TypeScript
 - **Expo** (managed workflow, Expo Go for deployment)
 - **expo-router** — file-based routing with tabs
 - **@react-native-async-storage/async-storage** — persistent settings
 
 ### Key Differences from Web
+
 - API base URL is configurable via Settings tab (stored in AsyncStorage)
-- Default API URL: `http://server:8000/api/v1` (Tailscale hostname)
+- Default API URL: `http://server:8002/api/v1` (Tailscale hostname)
 - Settings page has "Test Connection" to verify connectivity
 - Mobile Learn screen not yet updated for unified question types (still uses old regular-only format)
 
 ## Running the App
 
 ### Backend
+
 ```bash
 cd backend
 # Create .env with RECALL_DATABASE_URL, RECALL_GEMINI_API_KEY, RECALL_LLM_PROVIDER, etc.
@@ -384,13 +398,15 @@ uvicorn app.main:app --reload --host 0.0.0.0
 ```
 
 ### Web
+
 ```bash
 cd web
 npm install
-npm run dev    # Starts on :5173, proxies /api to :8000
+npm run dev    # Starts on :5175, proxies /api to :8002
 ```
 
 ### Mobile
+
 ```bash
 cd mobile
 npm install
@@ -398,6 +414,7 @@ npx expo start  # Scan QR with Expo Go
 ```
 
 ### Database Setup
+
 ```bash
 psql -h server -U postgres -d learning-api -f backend/learning_api_schema.sql
 ```

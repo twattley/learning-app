@@ -35,18 +35,25 @@ export default function Calculator({ onUseResult }: CalculatorProps) {
 
     try {
       const result = evaluate(expression);
-      const formatted = typeof result === "number" 
-        ? Number(result.toPrecision(8)).toString()
-        : String(result);
-      
-      setHistory([...history, { expression, result: formatted, isError: false }]);
+      const formatted =
+        typeof result === "number"
+          ? Number(result.toPrecision(8)).toString()
+          : String(result);
+
+      setHistory([
+        ...history,
+        { expression, result: formatted, isError: false },
+      ]);
       setExpression("");
     } catch (err: any) {
-      setHistory([...history, { 
-        expression, 
-        result: err.message || "Error", 
-        isError: true 
-      }]);
+      setHistory([
+        ...history,
+        {
+          expression,
+          result: err.message || "Error",
+          isError: true,
+        },
+      ]);
       setExpression("");
     }
   };
@@ -68,13 +75,13 @@ export default function Calculator({ onUseResult }: CalculatorProps) {
   };
 
   const insertSymbol = (symbol: string) => {
-    setExpression(prev => prev + symbol);
+    setExpression((prev) => prev + symbol);
     inputRef.current?.focus();
   };
 
   if (!isOpen) {
     return (
-      <button 
+      <button
         className="calc-toggle-btn"
         onClick={() => setIsOpen(true)}
         title="Open calculator"
@@ -88,15 +95,20 @@ export default function Calculator({ onUseResult }: CalculatorProps) {
     <div className="calculator-panel">
       <div className="calc-header">
         <span>Calculator</span>
-        <button className="calc-close-btn" onClick={() => setIsOpen(false)}>×</button>
+        <button className="calc-close-btn" onClick={() => setIsOpen(false)}>
+          ×
+        </button>
       </div>
 
       {history.length > 0 && (
         <div className="calc-history" ref={historyRef}>
           {history.map((entry, i) => (
-            <div key={i} className={`calc-entry ${entry.isError ? "error" : ""}`}>
+            <div
+              key={i}
+              className={`calc-entry ${entry.isError ? "error" : ""}`}
+            >
               <div className="calc-expr">{entry.expression}</div>
-              <div 
+              <div
                 className="calc-result"
                 onClick={() => handleUseResult(entry.result)}
                 title={entry.isError ? undefined : "Click to use this result"}
@@ -130,7 +142,9 @@ export default function Calculator({ onUseResult }: CalculatorProps) {
           onKeyDown={handleKeyDown}
           placeholder="e.g., exp(-5) * 5^3 / factorial(3)"
         />
-        <button className="calc-eval-btn" onClick={handleEvaluate}>=</button>
+        <button className="calc-eval-btn" onClick={handleEvaluate}>
+          =
+        </button>
       </div>
 
       <div className="calc-hint">
