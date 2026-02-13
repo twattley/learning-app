@@ -1,0 +1,18 @@
+#!/bin/zsh
+# Setup environment for learning-api scripts
+# Usage: source "$(dirname "$0")/setup_env"
+
+PROJECT_ROOT="$HOME/Projects/learning_app"
+
+echo "Setting up environment for learning-api"
+cd "$PROJECT_ROOT"
+
+# Activate virtual environment
+source "/Users/tomwattley/Projects/learning_app/backend/.venv"
+
+# Load environment variables from .env
+if [[ -f "$PROJECT_ROOT/backend/.env" ]]; then
+    export $(grep -v '^#' "$PROJECT_ROOT/backend/.env" | xargs)
+fi
+
+export PYTHONPATH="$PROJECT_ROOT/backend"

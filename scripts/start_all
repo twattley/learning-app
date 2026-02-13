@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Start all learning-app services in a tmux session
+SESSION_NAME="learning-app"
+PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+
+# Kill existing session if it exists
+tmux kill-session -t $SESSION_NAME 2>/dev/null
+
+# Create new detached session with backend
+tmux new-session -d -s $SESSION_NAME -n backend -c "$PROJECT_DIR/backend"
+tmux send-keys -t $SESSION_NAME:backend "source .env 2>/dev/null; uv run python -m app.main" Enter
+
+# Create frontend window
+tmux new-window -t $SESSION_NAME -n frontend -c "$PROJECT_DIR/web"
+tmux send-keys -t $SESSION_NAME:frontend "npm run dev" Enter
+
+echo "✅ Started learning-app services"
+echo "   Backend:  http://localhost:8003"
+echo "   Frontend: http://localhost:5176"
+echo ""
+echo "   Run: tmux attach -t $SESSION_NAME"

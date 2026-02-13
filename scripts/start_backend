@@ -1,0 +1,30 @@
+#!/bin/zsh
+
+# Start Learning API Backend
+# This script starts the FastAPI backend server
+
+set -e
+
+SCRIPT_DIR="$(dirname "$0")"
+cd "$SCRIPT_DIR/.."
+
+# Load environment
+source "$SCRIPT_DIR/setup_env"
+
+echo "🚀 Starting Learning API Backend..."
+echo "API will be available at: http://localhost:8003"
+echo "API docs: http://localhost:8003/docs"
+echo ""
+
+cd backend
+
+# Kill any process listening on port 8003 (macOS)
+PIDS=$(lsof -ti tcp:8003 || true)
+if [[ -n "$PIDS" ]]; then
+  echo "Killing process(es) on port 8003: $PIDS"
+  kill -TERM $PIDS 2>/dev/null || true
+  sleep 1
+  kill -KILL $PIDS 2>/dev/null || true
+fi
+
+.venv/bin/python -m app.main

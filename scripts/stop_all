@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Stop all Learning API services
+# This script stops the tmux session
+
+set -e
+
+SESSION="learning-app"
+
+tmux has-session -t $SESSION 2>/dev/null
+
+if [ $? == 0 ]; then
+    tmux kill-session -t $SESSION
+    echo "✅ Learning API services stopped"
+else
+    echo "⚠️  No running session found"
+fi

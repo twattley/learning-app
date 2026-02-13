@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Start Learning API Frontend
+# This script starts the React frontend development server
+
+set -e
+
+cd "$(dirname "$0")/.."
+
+echo "🚀 Starting Learning API Frontend..."
+echo "Frontend will be available at: http://localhost:5176"
+echo ""
+
+cd web
+npm run dev

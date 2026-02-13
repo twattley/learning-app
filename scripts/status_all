@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Check status of Learning API services
+# This script checks if services are running
+
+set -e
+
+SESSION="learning-app"
+
+echo "🔍 Checking Learning API services..."
+echo ""
+
+# Check tmux session
+tmux has-session -t $SESSION 2>/dev/null
+if [ $? == 0 ]; then
+    echo "✅ Tmux session '$SESSION' is running"
+    echo ""
+    tmux list-windows -t $SESSION
+else
+    echo "❌ Tmux session '$SESSION' is not running"
+fi
+
+echo ""
+
+# Check backend
+if curl -s http://localhost:8003/health > /dev/null 2>&1; then
+    echo "✅ Backend is running on http://localhost:8003"
+else
+    echo "❌ Backend is not responding on http://localhost:8003"
+fi
+
+# Check frontend
+if curl -s http://localhost:5176 > /dev/null 2>&1; then
+    echo "✅ Frontend is running on http://localhost:5176"
+else
+    echo "❌ Frontend is not responding on http://localhost:5176"
+fi
+
+echo ""
