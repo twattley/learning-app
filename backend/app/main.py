@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import close_pool
-from app.routers import learn, math, questions
+from app.routers import learn, math, questions, settings
 
 
 @asynccontextmanager
@@ -27,6 +27,7 @@ app.add_middleware(
 app.include_router(questions.router, prefix="/api/v1")
 app.include_router(learn.router, prefix="/api/v1")
 app.include_router(math.router, prefix="/api/v1")
+app.include_router(settings.router, prefix="/api/v1")
 
 
 @app.get("/health")

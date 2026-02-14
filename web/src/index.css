@@ -78,6 +78,59 @@ body,
   color: #fff;
 }
 
+.sidebar-spacer {
+  flex: 1;
+}
+
+.llm-toggle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  margin-top: 4px;
+}
+
+.llm-toggle:hover {
+  border-color: #525252;
+}
+
+.llm-toggle.local {
+  border-color: #22d3ee;
+  background: #0a2a33;
+}
+
+.llm-toggle.web {
+  border-color: #a855f7;
+  background: #1a0a2e;
+}
+
+.llm-toggle:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.llm-toggle-icon {
+  font-size: 18px;
+}
+
+.llm-toggle-label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.llm-toggle-model {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
 .content {
   flex: 1;
   overflow-y: auto;

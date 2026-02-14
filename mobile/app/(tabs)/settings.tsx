@@ -9,7 +9,7 @@ import {
   Alert,
 } from "react-native";
 import { getApiUrl, setApiUrl, testApiConnection } from "../../lib/storage";
-import { clearApiCache } from "../../lib/api";
+import { clearApiCache, getLLMMode, setLLMMode, type LLMMode } from "../../lib/api";
 
 export default function SettingsScreen() {
   const [url, setUrl] = useState("");
@@ -18,10 +18,36 @@ export default function SettingsScreen() {
     success: boolean;
     message: string;
   } | null>(null);
+  const [llmMode, setLlmMode] = useState<LLMMode | null>(null);
+  const [switchingMode, setSwitchingMode] = useState(false);
 
   useEffect(() => {
     getApiUrl().then(setUrl);
+    loadLLMMode();
   }, []);
+
+  const loadLLMMode = async () => {
+    try {
+      const mode = await getLLMMode();
+      setLlmMode(mode);
+    } catch {
+      // API not reachable yet, ignore
+    }
+  };
+
+  const handleToggleMode = async () => {
+    if (!llmMode) return;
+    setSwitchingMode(true);
+    try {
+      const newMode = llmMode.mode === "local" ? "web" : "local";
+      const result = await setLLMMode(newMode);
+      setLlmMode(result);
+    } catch (e: any) {
+      Alert.alert("Error", "Failed to switch LLM mode");
+    } finally {
+      setSwitchingMode(false);
+    }
+  };
 
   const handleTest = async () => {
     setTesting(true);
@@ -29,12 +55,14 @@ export default function SettingsScreen() {
     const result = await testApiConnection(url);
     setTestResult(result);
     setTesting(false);
+    if (result.success) loadLLMMode();
   };
 
   const handleSave = async () => {
     await setApiUrl(url);
     clearApiCache();
     Alert.alert("Saved", "API URL saved.");
+    loadLLMMode();
   };
 
   return (
@@ -89,6 +117,43 @@ export default function SettingsScreen() {
         Use your Tailscale hostname (e.g., "server") instead of "localhost" when
         running on a physical device.
       </Text>
+
+      {/* LLM Mode Toggle */}
+      <View style={styles.divider} />
+      <Text style={styles.title}>LLM Mode</Text>
+
+      {llmMode ? (
+        <View>
+          <TouchableOpacity
+            style={[
+              styles.modeButton,
+              llmMode.mode === "local" ? styles.modeLocal : styles.modeWeb,
+            ]}
+            onPress={handleToggleMode}
+            disabled={switchingMode}
+          >
+            {switchingMode ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <View style={styles.modeContent}>
+                <Text style={styles.modeLabel}>
+                  {llmMode.mode === "local" ? "🏠 Local" : "☁️ Web"}
+                </Text>
+                <Text style={styles.modeModel}>{llmMode.model}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+          <Text style={styles.hint}>
+            {llmMode.mode === "local"
+              ? "Using Ollama on your local machine. Tap to switch to Gemini."
+              : "Using Gemini cloud API. Tap to switch to local Ollama."}
+          </Text>
+        </View>
+      ) : (
+        <Text style={styles.hint}>
+          Connect to the API first to configure LLM mode.
+        </Text>
+      )}
     </View>
   );
 }
@@ -163,5 +228,40 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 20,
     marginTop: 8,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#2a2a2a",
+    marginVertical: 24,
+  },
+  modeButton: {
+    padding: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  modeLocal: {
+    backgroundColor: "#164e63",
+    borderWidth: 1,
+    borderColor: "#22d3ee",
+  },
+  modeWeb: {
+    backgroundColor: "#3b0764",
+    borderWidth: 1,
+    borderColor: "#a855f7",
+  },
+  modeContent: {
+    alignItems: "center",
+    gap: 4,
+  },
+  modeLabel: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "700",
+  },
+  modeModel: {
+    color: "#d4d4d4",
+    fontSize: 13,
+    fontWeight: "500",
   },
 });

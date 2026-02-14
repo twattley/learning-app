@@ -1,42 +1,43 @@
 from openai import AsyncOpenAI
 
-from app.config import settings
+from app.config import settings, get_llm_provider
 
-_client: AsyncOpenAI | None = None
+_clients: dict[str, AsyncOpenAI] = {}
 _gemini_client: AsyncOpenAI | None = None  # Dedicated Gemini client for math problems
 
 
 def _get_client() -> AsyncOpenAI:
-    """Return an OpenAI-compatible client for Gemini, OpenAI, or Ollama."""
-    global _client
-    if _client is None:
-        print(f"[LLM] Initializing client with provider: {settings.llm_provider}")
-        if settings.llm_provider == "gemini":
+    """Return an OpenAI-compatible client for the active provider."""
+    provider = get_llm_provider()
+    if provider not in _clients:
+        print(f"[LLM] Initializing client with provider: {provider}")
+        if provider == "gemini":
             print(
                 f"[LLM] Using Gemini at generativelanguage.googleapis.com, model: {settings.gemini_model}"
             )
-            _client = AsyncOpenAI(
+            _clients[provider] = AsyncOpenAI(
                 base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
                 api_key=settings.gemini_api_key,
             )
-        elif settings.llm_provider == "ollama":
+        elif provider == "ollama":
             print(
                 f"[LLM] Using Ollama at {settings.ollama_base_url}, model: {settings.ollama_model}"
             )
-            _client = AsyncOpenAI(
+            _clients[provider] = AsyncOpenAI(
                 base_url=settings.ollama_base_url,
                 api_key="ollama",
             )
         else:
             print(f"[LLM] Using OpenAI, model: {settings.openai_model}")
-            _client = AsyncOpenAI(api_key=settings.openai_api_key)
-    return _client
+            _clients[provider] = AsyncOpenAI(api_key=settings.openai_api_key)
+    return _clients[provider]
 
 
 def _get_model() -> str:
-    if settings.llm_provider == "gemini":
+    provider = get_llm_provider()
+    if provider == "gemini":
         return settings.gemini_model
-    if settings.llm_provider == "ollama":
+    if provider == "ollama":
         return settings.ollama_model
     return settings.openai_model
 

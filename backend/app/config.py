@@ -25,3 +25,20 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+
+# Runtime override for LLM provider (allows switching without restart)
+_runtime_llm_provider: str | None = None
+
+
+def get_llm_provider() -> str:
+    """Return the active LLM provider, respecting runtime overrides."""
+    if _runtime_llm_provider is not None:
+        return _runtime_llm_provider
+    return settings.llm_provider
+
+
+def set_llm_provider(provider: str) -> None:
+    """Set the LLM provider at runtime (does not persist across restarts)."""
+    global _runtime_llm_provider
+    _runtime_llm_provider = provider

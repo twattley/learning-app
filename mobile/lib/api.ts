@@ -100,3 +100,22 @@ export function submitAnswer(data: {
     body: JSON.stringify(data),
   });
 }
+
+// ── LLM Mode ──
+
+export interface LLMMode {
+  mode: string;
+  provider: string;
+  model: string;
+}
+
+export function getLLMMode(): Promise<LLMMode> {
+  return request("/settings/llm-mode");
+}
+
+export function setLLMMode(mode: string): Promise<LLMMode> {
+  return request("/settings/llm-mode", {
+    method: "PUT",
+    body: JSON.stringify({ mode }),
+  });
+}
