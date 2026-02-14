@@ -1,15 +1,32 @@
-#!/bin/bash
+#!/bin/zsh
 
 # Start Learning API Frontend
-# This script starts the React frontend development server
+# Usage: ./start_frontend [--tmux]
+#   --tmux: Run in a detached tmux session
 
 set -e
 
-cd "$(dirname "$0")/.."
+SCRIPT_DIR="$(dirname "$0")"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+SESSION_NAME="learning-frontend"
 
-echo "🚀 Starting Learning API Frontend..."
-echo "Frontend will be available at: http://localhost:5176"
-echo ""
-
-cd web
-npm run dev
+if [[ "$1" == "--tmux" ]]; then
+  # Kill existing session if it exists
+  tmux kill-session -t $SESSION_NAME 2>/dev/null || true
+  
+  # Create new detached session
+  tmux new-session -d -s $SESSION_NAME -c "$PROJECT_DIR/web"
+  tmux send-keys -t $SESSION_NAME "npm run dev" Enter
+  
+  echo "✅ Started frontend in tmux session: $SESSION_NAME"
+  echo "   Frontend: http://localhost:5176"
+  echo ""
+  echo "   Attach: tmux attach -t $SESSION_NAME"
+else
+  echo "🚀 Starting Learning API Frontend..."
+  echo "Frontend will be available at: http://localhost:5176"
+  echo ""
+  
+  cd "$PROJECT_DIR/web"
+  npm run dev
+fi

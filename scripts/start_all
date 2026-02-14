@@ -1,22 +1,20 @@
-#!/bin/bash
+#!/bin/zsh
 
-# Start all learning-app services in a tmux session
-SESSION_NAME="learning-app"
-PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+# Start all learning-app services in separate tmux sessions
+# This allows attaching to each independently for easier debugging
 
-# Kill existing session if it exists
-tmux kill-session -t $SESSION_NAME 2>/dev/null
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# Create new detached session with backend
-tmux new-session -d -s $SESSION_NAME -n backend -c "$PROJECT_DIR/backend"
-tmux send-keys -t $SESSION_NAME:backend "source .env 2>/dev/null; uv run python -m app.main" Enter
+# Start backend in its own tmux session
+"$SCRIPT_DIR/start_backend" --tmux
 
-# Create frontend window
-tmux new-window -t $SESSION_NAME -n frontend -c "$PROJECT_DIR/web"
-tmux send-keys -t $SESSION_NAME:frontend "npm run dev" Enter
+# Start frontend in its own tmux session
+"$SCRIPT_DIR/start_frontend" --tmux
 
-echo "✅ Started learning-app services"
-echo "   Backend:  http://localhost:8003"
-echo "   Frontend: http://localhost:5176"
 echo ""
-echo "   Run: tmux attach -t $SESSION_NAME"
+echo "✅ Started learning-app services in separate sessions"
+echo "   Backend:  tmux attach -t learning-backend"
+echo "   Frontend: tmux attach -t learning-frontend"
+echo ""
+echo "   List sessions: tmux ls"
+echo "   Kill all:      ./scripts/stop_all"

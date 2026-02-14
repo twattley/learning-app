@@ -1,22 +1,19 @@
 #!/bin/zsh
 
 # Start Learning API Backend
-# This script starts the FastAPI backend server
+# Usage: ./start_backend [--tmux]
+#   --tmux: Run in a detached tmux session
 
 set -e
 
 SCRIPT_DIR="$(dirname "$0")"
-cd "$SCRIPT_DIR/.."
+PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+SESSION_NAME="learning-backend"
+
+cd "$PROJECT_DIR"
 
 # Load environment
 source "$SCRIPT_DIR/setup_env"
-
-echo "🚀 Starting Learning API Backend..."
-echo "API will be available at: http://localhost:8003"
-echo "API docs: http://localhost:8003/docs"
-echo ""
-
-cd backend
 
 # Kill any process listening on port 8003 (macOS)
 PIDS=$(lsof -ti tcp:8003 || true)
@@ -27,4 +24,25 @@ if [[ -n "$PIDS" ]]; then
   kill -KILL $PIDS 2>/dev/null || true
 fi
 
-.venv/bin/python -m app.main
+if [[ "$1" == "--tmux" ]]; then
+  # Kill existing session if it exists
+  tmux kill-session -t $SESSION_NAME 2>/dev/null || true
+  
+  # Create new detached session
+  tmux new-session -d -s $SESSION_NAME -c "$PROJECT_DIR/backend"
+  tmux send-keys -t $SESSION_NAME "source .env 2>/dev/null; .venv/bin/python -m app.main" Enter
+  
+  echo "✅ Started backend in tmux session: $SESSION_NAME"
+  echo "   API: http://localhost:8003"
+  echo "   Docs: http://localhost:8003/docs"
+  echo ""
+  echo "   Attach: tmux attach -t $SESSION_NAME"
+else
+  echo "🚀 Starting Learning API Backend..."
+  echo "API will be available at: http://localhost:8003"
+  echo "API docs: http://localhost:8003/docs"
+  echo ""
+  
+  cd backend
+  .venv/bin/python -m app.main
+fi

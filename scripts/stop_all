@@ -1,17 +1,35 @@
 #!/bin/bash
 
 # Stop all Learning API services
-# This script stops the tmux session
+# This script stops the separate tmux sessions for backend and frontend
 
-set -e
+BACKEND_SESSION="learning-backend"
+FRONTEND_SESSION="learning-frontend"
+LEGACY_SESSION="learning-app"
 
-SESSION="learning-app"
+stopped=0
 
-tmux has-session -t $SESSION 2>/dev/null
+# Kill backend session
+if tmux has-session -t $BACKEND_SESSION 2>/dev/null; then
+    tmux kill-session -t $BACKEND_SESSION
+    echo "✅ Backend session stopped"
+    stopped=1
+fi
 
-if [ $? == 0 ]; then
-    tmux kill-session -t $SESSION
-    echo "✅ Learning API services stopped"
-else
-    echo "⚠️  No running session found"
+# Kill frontend session
+if tmux has-session -t $FRONTEND_SESSION 2>/dev/null; then
+    tmux kill-session -t $FRONTEND_SESSION
+    echo "✅ Frontend session stopped"
+    stopped=1
+fi
+
+# Kill legacy combined session if it exists
+if tmux has-session -t $LEGACY_SESSION 2>/dev/null; then
+    tmux kill-session -t $LEGACY_SESSION
+    echo "✅ Legacy session stopped"
+    stopped=1
+fi
+
+if [ $stopped -eq 0 ]; then
+    echo "⚠️  No running sessions found"
 fi

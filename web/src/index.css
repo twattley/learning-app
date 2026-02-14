@@ -7,15 +7,15 @@
 }
 
 :root {
-  --bg: #0f172a;
-  --surface: #1e293b;
-  --border: #334155;
-  --text: #e2e8f0;
-  --text-dim: #94a3b8;
-  --text-muted: #64748b;
+  --bg: #000000;
+  --surface: #111111;
+  --border: #2a2a2a;
+  --text: #e5e5e5;
+  --text-dim: #a3a3a3;
+  --text-muted: #737373;
   --accent: #2563eb;
   --accent-hover: #1d4ed8;
-  --badge-bg: #1e3a5f;
+  --badge-bg: #1a1a2e;
   --badge-text: #7dd3fc;
   --danger: #dc2626;
   --danger-hover: #b91c1c;
@@ -51,7 +51,7 @@ body,
 .logo {
   font-size: 20px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: #f5f5f5;
   padding: 8px 12px 20px;
 }
 
@@ -107,10 +107,10 @@ body,
   background: var(--accent-hover);
 }
 .btn-secondary {
-  background: #475569;
+  background: #525252;
 }
 .btn-secondary:hover {
-  background: #64748b;
+  background: #737373;
 }
 .btn-danger {
   background: var(--danger);
@@ -173,7 +173,7 @@ body,
 .textarea {
   width: 100%;
   background: var(--bg);
-  color: #f1f5f9;
+  color: #f5f5f5;
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 12px;
@@ -213,7 +213,7 @@ body,
 .page-header h1 {
   font-size: 22px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: #f5f5f5;
 }
 
 /* ── Questions list ── */
@@ -235,7 +235,7 @@ body,
 }
 
 .question-preview {
-  color: #cbd5e1;
+  color: #d4d4d4;
   font-size: 14px;
   line-height: 1.5;
   white-space: pre-wrap;
@@ -288,7 +288,7 @@ body,
   min-height: 160px;
   resize: vertical;
   background: var(--surface);
-  color: #f1f5f9;
+  color: #f5f5f5;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 16px;
@@ -317,7 +317,7 @@ body,
 }
 
 .score-value {
-  color: #f1f5f9;
+  color: #f5f5f5;
   font-size: 28px;
   font-weight: 700;
 }
@@ -334,7 +334,7 @@ body,
 .md-content h1,
 .md-content h2,
 .md-content h3 {
-  color: #f1f5f9;
+  color: #f5f5f5;
   margin-top: 16px;
   margin-bottom: 8px;
 }
@@ -345,8 +345,8 @@ body,
 }
 
 .md-content code {
-  background: #334155;
-  color: #e2e8f0;
+  background: #2a2a2a;
+  color: #e5e5e5;
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 0.9em;
@@ -380,7 +380,7 @@ body,
 }
 
 .md-content strong {
-  color: #f1f5f9;
+  color: #f5f5f5;
 }
 
 /* ── Loading / empty states ── */
@@ -535,7 +535,7 @@ body,
 .calc-input {
   flex: 1;
   background: var(--bg);
-  color: #f1f5f9;
+  color: #f5f5f5;
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 10px 12px;

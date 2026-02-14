@@ -2,13 +2,13 @@
 # Setup environment for learning-api scripts
 # Usage: source "$(dirname "$0")/setup_env"
 
-PROJECT_ROOT="$HOME/Projects/learning_app"
+PROJECT_ROOT="$HOME/Projects/learning-app"
 
 echo "Setting up environment for learning-api"
 cd "$PROJECT_ROOT"
 
 # Activate virtual environment
-source "/Users/tomwattley/Projects/learning_app/backend/.venv"
+source "$PROJECT_ROOT/backend/.venv/bin/activate"
 
 # Load environment variables from .env
 if [[ -f "$PROJECT_ROOT/backend/.env" ]]; then
