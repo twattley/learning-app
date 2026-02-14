@@ -9,6 +9,7 @@ import {
   Alert,
 } from "react-native";
 import { getApiUrl, setApiUrl, testApiConnection } from "../../lib/storage";
+import { clearApiCache } from "../../lib/api";
 
 export default function SettingsScreen() {
   const [url, setUrl] = useState("");
@@ -32,10 +33,8 @@ export default function SettingsScreen() {
 
   const handleSave = async () => {
     await setApiUrl(url);
-    Alert.alert(
-      "Saved",
-      "API URL saved. Restart the app for changes to take effect.",
-    );
+    clearApiCache();
+    Alert.alert("Saved", "API URL saved.");
   };
 
   return (
@@ -47,7 +46,7 @@ export default function SettingsScreen() {
         style={styles.input}
         value={url}
         onChangeText={setUrl}
-        placeholder="http://server:8000/api/v1"
+        placeholder="http://server:8003/api/v1"
         placeholderTextColor="#64748b"
         autoCapitalize="none"
         autoCorrect={false}

@@ -51,6 +51,7 @@ export default function LearnScreen() {
     try {
       const r = await submitAnswer({
         question_id: question.id,
+        question_type: question.question_type ?? "regular",
         user_answer: userAnswer.trim(),
       });
       setReview(r);

@@ -24,6 +24,7 @@ export interface Question {
   created_at: string;
   updated_at: string;
   display_text?: string;
+  question_type?: string;
 }
 
 export interface Review {
@@ -91,6 +92,7 @@ export function fetchNextQuestion(topic?: string): Promise<Question> {
 
 export function submitAnswer(data: {
   question_id: string;
+  question_type: string;
   user_answer: string;
 }): Promise<Review> {
   return request("/learn/submit", {
