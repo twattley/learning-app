@@ -22,16 +22,18 @@ export default function SettingsScreen() {
   const [switchingMode, setSwitchingMode] = useState(false);
 
   useEffect(() => {
-    getApiUrl().then(setUrl);
-    loadLLMMode();
+    getApiUrl().then((u) => {
+      setUrl(u);
+      loadLLMMode();
+    });
   }, []);
 
   const loadLLMMode = async () => {
     try {
       const mode = await getLLMMode();
       setLlmMode(mode);
-    } catch {
-      // API not reachable yet, ignore
+    } catch (e) {
+      console.log("[Settings] Failed to load LLM mode:", e);
     }
   };
 
