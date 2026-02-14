@@ -47,7 +47,7 @@ export default function SettingsScreen() {
         value={url}
         onChangeText={setUrl}
         placeholder="http://server:8003/api/v1"
-        placeholderTextColor="#64748b"
+        placeholderTextColor="#737373"
         autoCapitalize="none"
         autoCorrect={false}
         keyboardType="url"
@@ -96,29 +96,29 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0f172a",
+    backgroundColor: "#000000",
     padding: 20,
   },
   title: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#f8fafc",
+    color: "#fafafa",
     marginBottom: 24,
   },
   label: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#94a3b8",
+    color: "#a3a3a3",
     marginBottom: 8,
   },
   input: {
-    backgroundColor: "#1e293b",
+    backgroundColor: "#111111",
     borderRadius: 8,
     padding: 14,
     fontSize: 16,
-    color: "#f8fafc",
+    color: "#fafafa",
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2a2a",
     marginBottom: 16,
   },
   buttonRow: {
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   testButton: {
-    backgroundColor: "#475569",
+    backgroundColor: "#525252",
   },
   saveButton: {
     backgroundColor: "#2563eb",
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   hint: {
-    color: "#64748b",
+    color: "#737373",
     fontSize: 13,
     lineHeight: 20,
     marginTop: 8,

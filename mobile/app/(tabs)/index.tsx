@@ -112,7 +112,7 @@ export default function LearnScreen() {
             <TextInput
               style={styles.input}
               placeholder="Type your answer..."
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor="#a3a3a3"
               multiline
               value={userAnswer}
               onChangeText={setUserAnswer}
@@ -155,7 +155,7 @@ export default function LearnScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0f172a" },
+  container: { flex: 1, backgroundColor: "#000000" },
   scroll: { padding: 20, paddingBottom: 60 },
   center: {
     flex: 1,
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
 
   topicBadge: {
     alignSelf: "flex-start",
-    backgroundColor: "#1e3a5f",
+    backgroundColor: "#1a1a2e",
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
   topicText: { color: "#7dd3fc", fontSize: 13, fontWeight: "600" },
 
   questionText: {
-    color: "#f1f5f9",
+    color: "#f5f5f5",
     fontSize: 20,
     fontWeight: "600",
     lineHeight: 28,
@@ -183,14 +183,14 @@ const styles = StyleSheet.create({
   },
 
   input: {
-    backgroundColor: "#1e293b",
-    color: "#f1f5f9",
+    backgroundColor: "#111111",
+    color: "#f5f5f5",
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
     minHeight: 140,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2a2a",
     marginBottom: 16,
   },
 
@@ -209,25 +209,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 16,
   },
-  scoreLabel: { color: "#94a3b8", fontSize: 16 },
+  scoreLabel: { color: "#a3a3a3", fontSize: 16 },
   scoreValue: { color: "#22d3ee", fontSize: 28, fontWeight: "700" },
 
   feedbackCard: {
-    backgroundColor: "#1e293b",
+    backgroundColor: "#111111",
     borderRadius: 12,
     padding: 16,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2a2a",
   },
-  feedbackText: { color: "#e2e8f0", fontSize: 15, lineHeight: 22 },
+  feedbackText: { color: "#e5e5e5", fontSize: 15, lineHeight: 22 },
 
-  emptyText: { color: "#f1f5f9", fontSize: 18, fontWeight: "600" },
-  emptySubtext: { color: "#94a3b8", fontSize: 14, marginTop: 8 },
+  emptyText: { color: "#f5f5f5", fontSize: 18, fontWeight: "600" },
+  emptySubtext: { color: "#a3a3a3", fontSize: 14, marginTop: 8 },
 
   errorText: { color: "#f87171", fontSize: 18, fontWeight: "600" },
   errorDetail: {
-    color: "#94a3b8",
+    color: "#a3a3a3",
     fontSize: 13,
     marginTop: 8,
     marginBottom: 20,
@@ -236,17 +236,17 @@ const styles = StyleSheet.create({
 });
 
 const mdStyles = StyleSheet.create({
-  body: { color: "#e2e8f0", fontSize: 15, lineHeight: 22 },
-  heading1: { color: "#f1f5f9", fontSize: 22, fontWeight: "700", marginBottom: 8 },
-  heading2: { color: "#f1f5f9", fontSize: 19, fontWeight: "700", marginBottom: 6 },
-  heading3: { color: "#f1f5f9", fontSize: 17, fontWeight: "600", marginBottom: 4 },
-  strong: { color: "#f1f5f9", fontWeight: "700" },
-  em: { color: "#cbd5e1", fontStyle: "italic" },
+  body: { color: "#e5e5e5", fontSize: 15, lineHeight: 22 },
+  heading1: { color: "#f5f5f5", fontSize: 22, fontWeight: "700", marginBottom: 8 },
+  heading2: { color: "#f5f5f5", fontSize: 19, fontWeight: "700", marginBottom: 6 },
+  heading3: { color: "#f5f5f5", fontSize: 17, fontWeight: "600", marginBottom: 4 },
+  strong: { color: "#f5f5f5", fontWeight: "700" },
+  em: { color: "#d4d4d4", fontStyle: "italic" },
   bullet_list: { marginVertical: 4 },
   ordered_list: { marginVertical: 4 },
   list_item: { marginVertical: 2 },
   code_inline: {
-    backgroundColor: "#334155",
+    backgroundColor: "#2a2a2a",
     color: "#7dd3fc",
     fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
     fontSize: 13,
@@ -255,15 +255,15 @@ const mdStyles = StyleSheet.create({
     borderRadius: 4,
   },
   fence: {
-    backgroundColor: "#1e293b",
-    borderColor: "#475569",
+    backgroundColor: "#111111",
+    borderColor: "#525252",
     borderWidth: 1,
     borderRadius: 8,
     padding: 12,
     marginVertical: 8,
   },
   code_block: {
-    color: "#e2e8f0",
+    color: "#e5e5e5",
     fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
     fontSize: 13,
     lineHeight: 20,

@@ -6,10 +6,10 @@ export default function Layout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: "#2563eb",
-        tabBarInactiveTintColor: "#94a3b8",
+        tabBarInactiveTintColor: "#a3a3a3",
         tabBarStyle: { paddingBottom: 4 },
-        headerStyle: { backgroundColor: "#1e293b" },
-        headerTintColor: "#f8fafc",
+        headerStyle: { backgroundColor: "#111111" },
+        headerTintColor: "#fafafa",
         headerTitleStyle: { fontWeight: "700" },
       }}
     >

@@ -93,7 +93,7 @@ export default function QuestionFormScreen() {
         <TextInput
           style={styles.inputSmall}
           placeholder="e.g. python, sql, networking"
-          placeholderTextColor="#64748b"
+          placeholderTextColor="#737373"
           value={topic}
           onChangeText={setTopic}
           autoCapitalize="none"
@@ -103,7 +103,7 @@ export default function QuestionFormScreen() {
         <TextInput
           style={styles.inputLarge}
           placeholder="What do you want to test?"
-          placeholderTextColor="#64748b"
+          placeholderTextColor="#737373"
           multiline
           value={questionText}
           onChangeText={setQuestionText}
@@ -116,7 +116,7 @@ export default function QuestionFormScreen() {
         <TextInput
           style={styles.inputLarge}
           placeholder="The ideal answer — leave blank to let the LLM grade on its own"
-          placeholderTextColor="#64748b"
+          placeholderTextColor="#737373"
           multiline
           value={answerText}
           onChangeText={setAnswerText}
@@ -142,37 +142,37 @@ export default function QuestionFormScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0f172a" },
+  container: { flex: 1, backgroundColor: "#000000" },
   center: { justifyContent: "center", alignItems: "center" },
   scroll: { padding: 20, paddingBottom: 60 },
 
   label: {
-    color: "#cbd5e1",
+    color: "#d4d4d4",
     fontSize: 14,
     fontWeight: "600",
     marginBottom: 6,
     marginTop: 16,
   },
-  optional: { color: "#64748b", fontWeight: "400" },
+  optional: { color: "#737373", fontWeight: "400" },
 
   inputSmall: {
-    backgroundColor: "#1e293b",
-    color: "#f1f5f9",
+    backgroundColor: "#111111",
+    color: "#f5f5f5",
     borderRadius: 10,
     padding: 14,
     fontSize: 15,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2a2a",
   },
   inputLarge: {
-    backgroundColor: "#1e293b",
-    color: "#f1f5f9",
+    backgroundColor: "#111111",
+    color: "#f5f5f5",
     borderRadius: 10,
     padding: 14,
     fontSize: 15,
     minHeight: 110,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2a2a",
   },
 
   button: {

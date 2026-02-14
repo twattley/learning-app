@@ -108,16 +108,16 @@ export default function QuestionsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0f172a" },
+  container: { flex: 1, backgroundColor: "#000000" },
   list: { padding: 16, paddingBottom: 100 },
 
   card: {
-    backgroundColor: "#1e293b",
+    backgroundColor: "#111111",
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2a2a",
   },
   cardHeader: {
     flexDirection: "row",
@@ -126,17 +126,17 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   topicBadge: {
-    backgroundColor: "#1e3a5f",
+    backgroundColor: "#1a1a2e",
     paddingHorizontal: 10,
     paddingVertical: 3,
     borderRadius: 10,
   },
   topicText: { color: "#7dd3fc", fontSize: 12, fontWeight: "600" },
-  noAnswer: { color: "#64748b", fontSize: 11, fontStyle: "italic" },
-  questionText: { color: "#e2e8f0", fontSize: 15, lineHeight: 21 },
+  noAnswer: { color: "#737373", fontSize: 11, fontStyle: "italic" },
+  questionText: { color: "#e5e5e5", fontSize: 15, lineHeight: 21 },
 
   emptyText: {
-    color: "#94a3b8",
+    color: "#a3a3a3",
     textAlign: "center",
     marginTop: 60,
     fontSize: 15,

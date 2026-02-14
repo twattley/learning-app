@@ -9,8 +9,8 @@ export default function RootLayout() {
         options={{
           title: "Question",
           presentation: "modal",
-          headerStyle: { backgroundColor: "#1e293b" },
-          headerTintColor: "#f8fafc",
+          headerStyle: { backgroundColor: "#111111" },
+          headerTintColor: "#fafafa",
         }}
       />
     </Stack>
