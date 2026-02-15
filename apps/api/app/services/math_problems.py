@@ -93,6 +93,22 @@ def _compound_interest(params: dict) -> float:
     )
 
 
+def _conditional_probability_basic(params: dict) -> float:
+    """P(A|B) = P(A and B) / P(B)."""
+    return params["p_a_and_b"] / params["p_b"]
+
+
+def _bayes_disease_given_positive(params: dict) -> float:
+    """P(Disease|Positive) via Bayes' theorem."""
+    prevalence = params["prevalence"]
+    sensitivity = params["sensitivity"]
+    specificity = params["specificity"]
+
+    numerator = sensitivity * prevalence
+    denominator = numerator + (1 - specificity) * (1 - prevalence)
+    return numerator / denominator
+
+
 # ── Template Registry ──
 
 MATH_TEMPLATES: dict[str, MathTemplate] = {
@@ -225,7 +241,44 @@ MATH_TEMPLATES: dict[str, MathTemplate] = {
         hint="**Compound Interest:** A = P × (1 + r/n)^(n×t)\n\nWhere P = principal, r = annual rate, n = compounds per year, t = years.",
         tolerance=1.0,
     ),
+    "conditional_probability_basic": MathTemplate(
+        type_id="conditional_probability_basic",
+        topic="probability",
+        concept="Conditional probability - probability of event A given event B",
+        param_ranges={"p_b": (0.2, 0.9), "p_a_and_b": (0.01, 0.6)},
+        asks_for="P(A|B), the probability of A given B",
+        example="In a school, 40% of students play sports and 25% both play sports and are in the music club. What is the probability a student is in the music club given they play sports?",
+        compute=_conditional_probability_basic,
+        hint="**Conditional Probability:** P(A|B) = P(A ∩ B) / P(B)\n\nDivide the overlap probability by the conditioning event probability.",
+    ),
+    "bayes_medical_test_positive": MathTemplate(
+        type_id="bayes_medical_test_positive",
+        topic="probability",
+        concept="Bayes theorem - probability of disease given a positive test",
+        param_ranges={
+            "prevalence": (0.001, 0.1),
+            "sensitivity": (0.8, 0.99),
+            "specificity": (0.8, 0.99),
+        },
+        asks_for="P(Disease | Positive test)",
+        example="A disease affects 1% of people. A test is 95% sensitive and 95% specific. If someone tests positive, what is the probability they actually have the disease?",
+        compute=_bayes_disease_given_positive,
+        hint="**Bayes' Theorem (medical test):**\nP(D|+) = [P(+|D) × P(D)] / ([P(+|D) × P(D)] + [P(+|¬D) × P(¬D)])\n\nHere, P(+|¬D) = 1 - specificity.",
+    ),
 }
+
+# Keep the full registry above, but control what is currently used here.
+# Add more template IDs back one-by-one as you learn each concept.
+ACTIVE_MATH_TEMPLATE_IDS: tuple[str, ...] = ("binomial_pmf",)
+
+
+def _active_templates() -> list[MathTemplate]:
+    """Return currently enabled templates in a stable order."""
+    return [
+        MATH_TEMPLATES[type_id]
+        for type_id in ACTIVE_MATH_TEMPLATE_IDS
+        if type_id in MATH_TEMPLATES
+    ]
 
 
 def get_template(type_id: str) -> MathTemplate | None:
@@ -235,20 +288,24 @@ def get_template(type_id: str) -> MathTemplate | None:
 
 def get_all_templates() -> list[MathTemplate]:
     """Get all available templates."""
-    return list(MATH_TEMPLATES.values())
+    return _active_templates()
 
 
 def get_templates_by_topic(topic: str) -> list[MathTemplate]:
     """Get templates for a specific topic."""
-    return [t for t in MATH_TEMPLATES.values() if t.topic == topic]
+    return [t for t in _active_templates() if t.topic == topic]
 
 
 def get_random_template(topic: str | None = None) -> MathTemplate:
     """Get a random template, optionally filtered by topic."""
     if topic:
-        templates = get_templates_by_topic(topic)
+        templates: list[MathTemplate] = get_templates_by_topic(topic)
     else:
-        templates = list(MATH_TEMPLATES.values())
+        templates: list[MathTemplate] = _active_templates()
+
+    if not templates:
+        raise ValueError("No active math templates configured")
+
     return random.choice(templates)
 
 
@@ -270,6 +327,9 @@ def generate_params(template: MathTemplate) -> dict[str, float]:
         elif param_name == "rate":
             # Interest rate - round to nice percentage
             params[param_name] = round(random.uniform(min_val, max_val), 2)
+        elif 0 <= min_val <= 1 and 0 <= max_val <= 1:
+            # General probability-like input
+            params[param_name] = round(random.uniform(min_val, max_val), 3)
         else:
             # General numeric
             params[param_name] = round(random.uniform(min_val, max_val), 1)
@@ -277,6 +337,10 @@ def generate_params(template: MathTemplate) -> dict[str, float]:
     # For binomial, ensure k <= n
     if "k" in params and "n" in params:
         params["k"] = min(params["k"], params["n"])
+
+    # For conditional probability, ensure P(A ∩ B) <= P(B)
+    if template.type_id == "conditional_probability_basic":
+        params["p_a_and_b"] = round(random.uniform(0.01, params["p_b"]), 3)
 
     return params
 
