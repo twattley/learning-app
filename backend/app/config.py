@@ -7,7 +7,7 @@ _env_file = Path(__file__).resolve().parent.parent / ".env"
 
 
 class Settings(BaseSettings):
-    database_url: str 
+    database_url: str
     rephrase_questions: bool = True
 
     # LLM provider: "gemini", "openai", or "ollama"

@@ -140,9 +140,7 @@ export default function LearnScreen() {
               </Text>
             </View>
             <View style={styles.feedbackCard}>
-              <Markdown style={mdStyles}>
-                {review.llm_feedback}
-              </Markdown>
+              <Markdown style={mdStyles}>{review.llm_feedback}</Markdown>
             </View>
             <Pressable style={styles.button} onPress={loadQuestion}>
               <Text style={styles.buttonText}>Next Question</Text>
@@ -237,9 +235,24 @@ const styles = StyleSheet.create({
 
 const mdStyles = StyleSheet.create({
   body: { color: "#e5e5e5", fontSize: 15, lineHeight: 22 },
-  heading1: { color: "#f5f5f5", fontSize: 22, fontWeight: "700", marginBottom: 8 },
-  heading2: { color: "#f5f5f5", fontSize: 19, fontWeight: "700", marginBottom: 6 },
-  heading3: { color: "#f5f5f5", fontSize: 17, fontWeight: "600", marginBottom: 4 },
+  heading1: {
+    color: "#f5f5f5",
+    fontSize: 22,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+  heading2: {
+    color: "#f5f5f5",
+    fontSize: 19,
+    fontWeight: "700",
+    marginBottom: 6,
+  },
+  heading3: {
+    color: "#f5f5f5",
+    fontSize: 17,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
   strong: { color: "#f5f5f5", fontWeight: "700" },
   em: { color: "#d4d4d4", fontStyle: "italic" },
   bullet_list: { marginVertical: 4 },

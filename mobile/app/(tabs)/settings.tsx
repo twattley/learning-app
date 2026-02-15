@@ -9,7 +9,12 @@ import {
   Alert,
 } from "react-native";
 import { getApiUrl, setApiUrl, testApiConnection } from "../../lib/storage";
-import { clearApiCache, getLLMMode, setLLMMode, type LLMMode } from "../../lib/api";
+import {
+  clearApiCache,
+  getLLMMode,
+  setLLMMode,
+  type LLMMode,
+} from "../../lib/api";
 
 export default function SettingsScreen() {
   const [url, setUrl] = useState("");

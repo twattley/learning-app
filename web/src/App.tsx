@@ -7,7 +7,9 @@ export default function App() {
   const [switching, setSwitching] = useState(false);
 
   useEffect(() => {
-    getLLMMode().then(setMode).catch(() => {});
+    getLLMMode()
+      .then(setMode)
+      .catch(() => {});
   }, []);
 
   const handleToggle = async () => {
@@ -28,10 +30,21 @@ export default function App() {
     <div className="app">
       <nav className="sidebar">
         <div className="logo">📚 Recall</div>
-        <NavLink to="/" end className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
+        <NavLink
+          to="/"
+          end
+          className={({ isActive }) =>
+            isActive ? "nav-link active" : "nav-link"
+          }
+        >
           🧠 Learn
         </NavLink>
-        <NavLink to="/questions" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
+        <NavLink
+          to="/questions"
+          className={({ isActive }) =>
+            isActive ? "nav-link active" : "nav-link"
+          }
+        >
           📝 Questions
         </NavLink>
         <div className="sidebar-spacer" />
