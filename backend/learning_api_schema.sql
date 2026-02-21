@@ -31,6 +31,7 @@ CREATE TABLE public.questions (
     question_text text NOT NULL,
     answer_text text,
     topic text NOT NULL,
+    tags text[] DEFAULT '{}'::text[] NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     ease_factor double precision DEFAULT 2.5,
@@ -63,6 +64,7 @@ CREATE INDEX idx_math_questions_template ON public.math_questions USING btree (t
 CREATE INDEX idx_math_questions_topic ON public.math_questions USING btree (topic);
 CREATE INDEX idx_math_reviews_question_id ON public.math_reviews USING btree (math_question_id);
 CREATE INDEX idx_questions_next_review ON public.questions USING btree (next_review_at);
+CREATE INDEX idx_questions_tags_gin ON public.questions USING gin (tags);
 CREATE INDEX idx_questions_topic ON public.questions USING btree (topic);
 CREATE INDEX idx_reviews_question_id ON public.reviews USING btree (question_id);
 ALTER TABLE ONLY public.math_reviews

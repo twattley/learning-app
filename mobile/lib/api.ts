@@ -21,19 +21,23 @@ export interface Question {
   question_text: string;
   answer_text: string | null;
   topic: string;
+  tags?: string[];
+  is_work?: boolean;
   created_at: string;
   updated_at: string;
   display_text?: string;
-  question_type?: string;
+  question_type?: "regular" | "math";
+  hint?: string;
 }
 
 export interface Review {
   id: string;
-  question_id: string;
+  question_type: "regular" | "math";
   user_answer: string;
   llm_feedback: string;
   score: number | null;
-  created_at: string;
+  is_correct?: boolean;
+  correct_answer?: number;
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -52,8 +56,11 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
 // ── Questions ──
 
-export function fetchQuestions(topic?: string): Promise<Question[]> {
-  const qs = topic ? `?topic=${encodeURIComponent(topic)}` : "";
+export function fetchQuestions(topic?: string, focus?: "work"): Promise<Question[]> {
+  const params = new URLSearchParams();
+  if (topic) params.set("topic", topic);
+  if (focus) params.set("focus", focus);
+  const qs = params.toString() ? `?${params.toString()}` : "";
   return request(`/questions${qs}`);
 }
 
@@ -65,13 +72,21 @@ export function createQuestion(data: {
   question_text: string;
   answer_text?: string;
   topic: string;
+  tags?: string[];
+  is_work?: boolean;
 }): Promise<Question> {
   return request("/questions", { method: "POST", body: JSON.stringify(data) });
 }
 
 export function updateQuestion(
   id: string,
-  data: { question_text?: string; answer_text?: string; topic?: string }
+  data: {
+    question_text?: string;
+    answer_text?: string;
+    topic?: string;
+    tags?: string[];
+    is_work?: boolean;
+  }
 ): Promise<Question> {
   return request(`/questions/${id}`, {
     method: "PUT",
@@ -85,14 +100,17 @@ export function deleteQuestion(id: string): Promise<void> {
 
 // ── Learning ──
 
-export function fetchNextQuestion(topic?: string): Promise<Question> {
-  const qs = topic ? `?topic=${encodeURIComponent(topic)}` : "";
+export function fetchNextQuestion(topic?: string, focus?: "work"): Promise<Question> {
+  const params = new URLSearchParams();
+  if (topic) params.set("topic", topic);
+  if (focus) params.set("focus", focus);
+  const qs = params.toString() ? `?${params.toString()}` : "";
   return request(`/learn/next${qs}`);
 }
 
 export function submitAnswer(data: {
   question_id: string;
-  question_type: string;
+  question_type: "regular" | "math";
   user_answer: string;
 }): Promise<Review> {
   return request("/learn/submit", {

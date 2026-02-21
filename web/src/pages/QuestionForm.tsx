@@ -13,6 +13,8 @@ export default function QuestionForm() {
   const isEditing = !!id;
 
   const [topic, setTopic] = useState("");
+  const [tagsText, setTagsText] = useState("");
+  const [isWork, setIsWork] = useState(false);
   const [questionText, setQuestionText] = useState("");
   const [answerText, setAnswerText] = useState("");
   const [saving, setSaving] = useState(false);
@@ -25,7 +27,10 @@ export default function QuestionForm() {
     getQuestion(id)
       .then((q) => {
         setTopic(q.topic);
-        setQuestionText(q.question_text);
+        const existingTags = q.tags ?? [];
+        setTagsText(existingTags.filter((tag) => tag !== "work").join(", "));
+        setIsWork(q.is_work ?? existingTags.includes("work"));
+        setQuestionText(q.question_text ?? "");
         setAnswerText(q.answer_text ?? "");
       })
       .catch(() => alert("Failed to load question"))
@@ -39,10 +44,23 @@ export default function QuestionForm() {
     }
     setSaving(true);
     try {
+      const parsedTags = tagsText
+        .split(",")
+        .map((tag) => tag.trim().toLowerCase())
+        .filter(Boolean);
+
+      if (parsedTags.length > 2) {
+        alert("Please use up to 2 tags.");
+        setSaving(false);
+        return;
+      }
+
       const data = {
         question_text: questionText.trim(),
         answer_text: answerText.trim() || undefined,
         topic: topic.trim().toLowerCase(),
+        tags: parsedTags,
+        is_work: isWork,
       };
 
       if (isEditing) {
@@ -124,6 +142,29 @@ export default function QuestionForm() {
           onChange={(e) => setTopic(e.target.value)}
           autoFocus
         />
+      </div>
+
+      <div className="form-group">
+        <label>Tags (optional, up to 2)</label>
+        <input
+          className="input"
+          type="text"
+          placeholder="e.g. backend, cert-prep"
+          value={tagsText}
+          onChange={(e) => setTagsText(e.target.value)}
+        />
+        <div className="form-hint">Comma-separated. "work" is controlled by the toggle below.</div>
+      </div>
+
+      <div className="form-group" style={{ marginTop: 8 }}>
+        <label style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <input
+            type="checkbox"
+            checked={isWork}
+            onChange={(e) => setIsWork(e.target.checked)}
+          />
+          Mark as work question
+        </label>
       </div>
 
       <div className="form-group">

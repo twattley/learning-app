@@ -4,6 +4,7 @@ import {
   Text,
   FlatList,
   Pressable,
+  Switch,
   Alert,
   ActivityIndicator,
   StyleSheet,
@@ -15,11 +16,12 @@ export default function QuestionsScreen() {
   const router = useRouter();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
+  const [workOnly, setWorkOnly] = useState(false);
 
   const load = async () => {
     setLoading(true);
     try {
-      const data = await fetchQuestions();
+      const data = await fetchQuestions(undefined, workOnly ? "work" : undefined);
       setQuestions(data);
     } catch {
       Alert.alert("Error", "Failed to load questions");
@@ -32,7 +34,7 @@ export default function QuestionsScreen() {
   useFocusEffect(
     useCallback(() => {
       load();
-    }, []),
+    }, [workOnly]),
   );
 
   const handleDelete = (q: Question) => {
@@ -65,6 +67,11 @@ export default function QuestionsScreen() {
         <View style={styles.topicBadge}>
           <Text style={styles.topicText}>{item.topic}</Text>
         </View>
+        {(item.is_work || item.tags?.includes("work")) && (
+          <View style={styles.workBadge}>
+            <Text style={styles.workText}>work</Text>
+          </View>
+        )}
         {item.answer_text == null && (
           <Text style={styles.noAnswer}>no answer</Text>
         )}
@@ -77,6 +84,11 @@ export default function QuestionsScreen() {
 
   return (
     <View style={styles.container}>
+      <View style={styles.filterRow}>
+        <Text style={styles.filterLabel}>Work only</Text>
+        <Switch value={workOnly} onValueChange={setWorkOnly} />
+      </View>
+
       {loading ? (
         <ActivityIndicator
           size="large"
@@ -110,6 +122,19 @@ export default function QuestionsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#000000" },
   list: { padding: 16, paddingBottom: 100 },
+  filterRow: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 4,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  filterLabel: {
+    color: "#d4d4d4",
+    fontSize: 14,
+    fontWeight: "600",
+  },
 
   card: {
     backgroundColor: "#111111",
@@ -132,6 +157,14 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   topicText: { color: "#7dd3fc", fontSize: 12, fontWeight: "600" },
+  workBadge: {
+    backgroundColor: "#1e3a8a",
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 10,
+    marginLeft: 8,
+  },
+  workText: { color: "#dbeafe", fontSize: 11, fontWeight: "600" },
   noAnswer: { color: "#737373", fontSize: 11, fontStyle: "italic" },
   questionText: { color: "#e5e5e5", fontSize: 15, lineHeight: 21 },
 

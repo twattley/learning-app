@@ -4,6 +4,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import Calculator from "../components/Calculator";
 import {
+  fetchQuestions,
   fetchNextQuestion,
   submitAnswer,
   type Question,
@@ -19,6 +20,22 @@ export default function Learn() {
   const [review, setReview] = useState<Review | null>(null);
   const [error, setError] = useState("");
   const [showHint, setShowHint] = useState(false);
+  const [workOnly, setWorkOnly] = useState(false);
+  const [topicFilter, setTopicFilter] = useState("");
+  const [availableTopics, setAvailableTopics] = useState<string[]>([]);
+
+  const loadTopics = async () => {
+    try {
+      const items = await fetchQuestions(undefined, workOnly ? "work" : undefined);
+      const topics = [...new Set(items.map((item) => item.topic))].sort();
+      setAvailableTopics(topics);
+      if (topicFilter && !topics.includes(topicFilter)) {
+        setTopicFilter("");
+      }
+    } catch {
+      setAvailableTopics([]);
+    }
+  };
 
   const loadQuestion = async () => {
     setPhase("loading");
@@ -26,7 +43,10 @@ export default function Learn() {
     setReview(null);
     setShowHint(false);
     try {
-      const q = await fetchNextQuestion();
+      const q = await fetchNextQuestion(
+        topicFilter || undefined,
+        workOnly ? "work" : undefined,
+      );
       setQuestion(q);
       setPhase("question");
     } catch (e: any) {
@@ -75,13 +95,45 @@ export default function Learn() {
   };
 
   useEffect(() => {
+    loadTopics();
+  }, [workOnly]);
+
+  useEffect(() => {
     loadQuestion();
-  }, []);
+  }, [workOnly, topicFilter]);
 
   const isMath = question?.question_type === "math";
 
   return (
     <div className="learn-container">
+      <div style={{ marginBottom: 12 }}>
+        <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14 }}>
+          <input
+            type="checkbox"
+            checked={workOnly}
+            onChange={(e) => setWorkOnly(e.target.checked)}
+          />
+          Work focus only
+        </label>
+      </div>
+
+      <div style={{ marginBottom: 12 }}>
+        <label style={{ display: "block", fontSize: 13, marginBottom: 6 }}>Subject</label>
+        <select
+          className="input"
+          value={topicFilter}
+          onChange={(e) => setTopicFilter(e.target.value)}
+          style={{ maxWidth: 320 }}
+        >
+          <option value="">All subjects (interleaved)</option>
+          {availableTopics.map((topic) => (
+            <option key={topic} value={topic}>
+              {topic}
+            </option>
+          ))}
+        </select>
+      </div>
+
       {phase === "loading" && (
         <div className="center-state">
           <div className="spinner" />
@@ -129,6 +181,11 @@ export default function Learn() {
             }}
           >
             <span className="topic-badge">{question.topic}</span>
+            {(question.is_work || question.tags?.includes("work")) && (
+              <span className="topic-badge" style={{ background: "#2563eb" }}>
+                Work
+              </span>
+            )}
             {isMath && (
               <span className="topic-badge" style={{ background: "#7c3aed" }}>
                 Math

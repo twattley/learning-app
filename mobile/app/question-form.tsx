@@ -4,6 +4,7 @@ import {
   Text,
   TextInput,
   Pressable,
+  Switch,
   ScrollView,
   Alert,
   ActivityIndicator,
@@ -27,6 +28,8 @@ export default function QuestionFormScreen() {
   const [questionText, setQuestionText] = useState("");
   const [answerText, setAnswerText] = useState("");
   const [topic, setTopic] = useState("");
+  const [tagsText, setTagsText] = useState("");
+  const [isWork, setIsWork] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -39,6 +42,9 @@ export default function QuestionFormScreen() {
         setQuestionText(q.question_text);
         setAnswerText(q.answer_text ?? "");
         setTopic(q.topic);
+        const existingTags = q.tags ?? [];
+        setTagsText(existingTags.filter((tag) => tag !== "work").join(", "));
+        setIsWork(q.is_work ?? existingTags.includes("work"));
       })
       .catch(() => Alert.alert("Error", "Failed to load question"))
       .finally(() => setLoading(false));
@@ -52,10 +58,23 @@ export default function QuestionFormScreen() {
 
     setSaving(true);
     try {
+      const parsedTags = tagsText
+        .split(",")
+        .map((tag) => tag.trim().toLowerCase())
+        .filter(Boolean);
+
+      if (parsedTags.length > 2) {
+        Alert.alert("Too many tags", "Please use up to 2 tags.");
+        setSaving(false);
+        return;
+      }
+
       const data = {
         question_text: questionText.trim(),
         answer_text: answerText.trim() || undefined,
         topic: topic.trim().toLowerCase(),
+        tags: parsedTags,
+        is_work: isWork,
       };
 
       if (isEditing) {
@@ -123,6 +142,23 @@ export default function QuestionFormScreen() {
           textAlignVertical="top"
         />
 
+        <Text style={styles.label}>
+          Tags <Text style={styles.optional}>(optional, up to 2)</Text>
+        </Text>
+        <TextInput
+          style={styles.inputSmall}
+          placeholder="e.g. backend, cert-prep"
+          placeholderTextColor="#737373"
+          value={tagsText}
+          onChangeText={setTagsText}
+          autoCapitalize="none"
+        />
+
+        <View style={styles.switchRow}>
+          <Text style={styles.label}>Mark as work question</Text>
+          <Switch value={isWork} onValueChange={setIsWork} />
+        </View>
+
         <Pressable
           style={[styles.button, saving && styles.buttonDisabled]}
           onPress={handleSave}
@@ -184,4 +220,10 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: { opacity: 0.5 },
   buttonText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+  switchRow: {
+    marginTop: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
 });

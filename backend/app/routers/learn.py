@@ -27,7 +27,7 @@ router = APIRouter(prefix="/learn", tags=["learn"])
 
 
 @router.get("/next")
-async def next_question(topic: str | None = Query(None)):
+async def next_question(topic: str | None = Query(None), focus: str | None = Query(None)):
     """
     Get the next question for review — randomly mixes regular Q&A and math problems.
 
@@ -35,12 +35,27 @@ async def next_question(topic: str | None = Query(None)):
     between question types for optimal learning.
     """
     pool = await get_pool()
+    work_only = (focus or "").strip().lower() == "work"
+    include_math = not work_only
 
     # Collect candidates from both regular questions and math templates
     candidates = []
 
     # Check for due regular questions
-    if topic:
+    if topic and work_only:
+        regular_row = await pool.fetchrow(
+            """
+            SELECT id, 'regular' as question_type, next_review_at, ease_factor
+            FROM questions
+            WHERE topic = $1
+              AND 'work' = ANY(tags)
+              AND next_review_at <= now()
+            ORDER BY next_review_at ASC, ease_factor ASC
+            LIMIT 1
+            """,
+            topic,
+        )
+    elif topic:
         regular_row = await pool.fetchrow(
             """
             SELECT id, 'regular' as question_type, next_review_at, ease_factor
@@ -66,45 +81,70 @@ async def next_question(topic: str | None = Query(None)):
         candidates.append(("regular", regular_row["id"], regular_row["next_review_at"]))
 
     # Check for due math templates
-    math_templates = (
-        get_templates_by_topic(topic) if topic else list(MATH_TEMPLATES.values())
-    )
-    template_ids = [t.type_id for t in math_templates]
-
-    if template_ids:
-        math_row = await pool.fetchrow(
-            """
-            SELECT template_type, next_review_at, ease_factor
-            FROM math_template_progress
-            WHERE template_type = ANY($1) AND next_review_at <= now()
-            ORDER BY next_review_at ASC, ease_factor ASC
-            LIMIT 1
-            """,
-            template_ids,
+    if include_math:
+        math_templates = (
+            get_templates_by_topic(topic) if topic else list(MATH_TEMPLATES.values())
         )
+        template_ids = [t.type_id for t in math_templates]
 
-        if math_row:
-            candidates.append(
-                ("math", math_row["template_type"], math_row["next_review_at"])
-            )
-        else:
-            # Check for untried math templates (they're always "due")
-            tried = await pool.fetch(
-                "SELECT template_type FROM math_template_progress WHERE template_type = ANY($1)",
+        if template_ids:
+            math_row = await pool.fetchrow(
+                """
+                SELECT template_type, next_review_at, ease_factor
+                FROM math_template_progress
+                WHERE template_type = ANY($1) AND next_review_at <= now()
+                ORDER BY next_review_at ASC, ease_factor ASC
+                LIMIT 1
+                """,
                 template_ids,
             )
-            tried_set = {r["template_type"] for r in tried}
-            untried = [t for t in template_ids if t not in tried_set]
-            if untried:
-                candidates.append(("math", random.choice(untried), None))
+
+            if math_row:
+                candidates.append(
+                    ("math", math_row["template_type"], math_row["next_review_at"])
+                )
+            else:
+                # Check for untried math templates (they're always "due")
+                tried = await pool.fetch(
+                    "SELECT template_type FROM math_template_progress WHERE template_type = ANY($1)",
+                    template_ids,
+                )
+                tried_set = {r["template_type"] for r in tried}
+                untried = [t for t in template_ids if t not in tried_set]
+                if untried:
+                    candidates.append(("math", random.choice(untried), None))
+    else:
+        template_ids = []
 
     # If nothing is due, add random candidates from both pools
     if not candidates:
         # Random regular question
-        if topic:
+        if topic and work_only:
+            random_regular = await pool.fetchrow(
+                """
+                SELECT id
+                FROM questions
+                WHERE topic = $1
+                  AND 'work' = ANY(tags)
+                ORDER BY random()
+                LIMIT 1
+                """,
+                topic,
+            )
+        elif topic:
             random_regular = await pool.fetchrow(
                 "SELECT id FROM questions WHERE topic = $1 ORDER BY random() LIMIT 1",
                 topic,
+            )
+        elif work_only:
+            random_regular = await pool.fetchrow(
+                """
+                SELECT id
+                FROM questions
+                WHERE 'work' = ANY(tags)
+                ORDER BY random()
+                LIMIT 1
+                """
             )
         else:
             random_regular = await pool.fetchrow(
@@ -115,7 +155,7 @@ async def next_question(topic: str | None = Query(None)):
             candidates.append(("regular", random_regular["id"], None))
 
         # Random math template
-        if template_ids:
+        if include_math and template_ids:
             candidates.append(("math", random.choice(template_ids), None))
 
     if not candidates:
@@ -201,11 +241,27 @@ async def _generate_math_question(pool, template_type: str):
 
 
 @router.get("/stats")
-async def get_review_stats(topic: str | None = Query(None)):
+async def get_review_stats(topic: str | None = Query(None), focus: str | None = Query(None)):
     """Get spaced repetition statistics."""
     pool = await get_pool()
+    work_only = (focus or "").strip().lower() == "work"
 
-    if topic:
+    if topic and work_only:
+        stats = await pool.fetchrow(
+            """
+            SELECT 
+                COUNT(*) as total_questions,
+                COUNT(*) FILTER (WHERE next_review_at <= now()) as due_now,
+                COUNT(*) FILTER (WHERE next_review_at > now() AND next_review_at <= now() + interval '1 day') as due_today,
+                COUNT(*) FILTER (WHERE review_count = 0) as never_reviewed,
+                AVG(ease_factor) as avg_ease_factor
+            FROM questions
+            WHERE topic = $1
+              AND 'work' = ANY(tags)
+            """,
+            topic,
+        )
+    elif topic:
         stats = await pool.fetchrow(
             """
             SELECT 
@@ -218,6 +274,19 @@ async def get_review_stats(topic: str | None = Query(None)):
             WHERE topic = $1
             """,
             topic,
+        )
+    elif work_only:
+        stats = await pool.fetchrow(
+            """
+            SELECT 
+                COUNT(*) as total_questions,
+                COUNT(*) FILTER (WHERE next_review_at <= now()) as due_now,
+                COUNT(*) FILTER (WHERE next_review_at > now() AND next_review_at <= now() + interval '1 day') as due_today,
+                COUNT(*) FILTER (WHERE review_count = 0) as never_reviewed,
+                AVG(ease_factor) as avg_ease_factor
+            FROM questions
+            WHERE 'work' = ANY(tags)
+            """
         )
     else:
         stats = await pool.fetchrow(

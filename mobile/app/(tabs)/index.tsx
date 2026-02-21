@@ -4,6 +4,7 @@ import {
   Text,
   TextInput,
   Pressable,
+  Switch,
   ScrollView,
   ActivityIndicator,
   StyleSheet,
@@ -11,6 +12,7 @@ import {
   Platform,
 } from "react-native";
 import {
+  fetchQuestions,
   fetchNextQuestion,
   submitAnswer,
   type Question,
@@ -26,13 +28,32 @@ export default function LearnScreen() {
   const [userAnswer, setUserAnswer] = useState("");
   const [review, setReview] = useState<Review | null>(null);
   const [error, setError] = useState("");
+  const [workOnly, setWorkOnly] = useState(false);
+  const [topicFilter, setTopicFilter] = useState("");
+  const [availableTopics, setAvailableTopics] = useState<string[]>([]);
+
+  const loadTopics = async () => {
+    try {
+      const items = await fetchQuestions(undefined, workOnly ? "work" : undefined);
+      const topics = [...new Set(items.map((item) => item.topic))].sort();
+      setAvailableTopics(topics);
+      if (topicFilter && !topics.includes(topicFilter)) {
+        setTopicFilter("");
+      }
+    } catch {
+      setAvailableTopics([]);
+    }
+  };
 
   const loadQuestion = async () => {
     setPhase("loading");
     setUserAnswer("");
     setReview(null);
     try {
-      const q = await fetchNextQuestion();
+      const q = await fetchNextQuestion(
+        topicFilter || undefined,
+        workOnly ? "work" : undefined,
+      );
       setQuestion(q);
       setPhase("question");
     } catch (e: any) {
@@ -64,8 +85,12 @@ export default function LearnScreen() {
 
   // Load first question on mount
   useEffect(() => {
+    loadTopics();
+  }, [workOnly]);
+
+  useEffect(() => {
     loadQuestion();
-  }, []);
+  }, [workOnly, topicFilter]);
 
   return (
     <KeyboardAvoidingView
@@ -76,6 +101,54 @@ export default function LearnScreen() {
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled"
       >
+        <View style={styles.workToggleRow}>
+          <Text style={styles.workToggleLabel}>Work focus only</Text>
+          <Switch value={workOnly} onValueChange={setWorkOnly} />
+        </View>
+
+        <View style={styles.subjectRow}>
+          <Text style={styles.subjectLabel}>Subject</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View style={styles.subjectChips}>
+              <Pressable
+                style={[
+                  styles.subjectChip,
+                  !topicFilter && styles.subjectChipActive,
+                ]}
+                onPress={() => setTopicFilter("")}
+              >
+                <Text
+                  style={[
+                    styles.subjectChipText,
+                    !topicFilter && styles.subjectChipTextActive,
+                  ]}
+                >
+                  All
+                </Text>
+              </Pressable>
+              {availableTopics.map((topic) => (
+                <Pressable
+                  key={topic}
+                  style={[
+                    styles.subjectChip,
+                    topicFilter === topic && styles.subjectChipActive,
+                  ]}
+                  onPress={() => setTopicFilter(topic)}
+                >
+                  <Text
+                    style={[
+                      styles.subjectChipText,
+                      topicFilter === topic && styles.subjectChipTextActive,
+                    ]}
+                  >
+                    {topic}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </ScrollView>
+        </View>
+
         {phase === "loading" && (
           <View style={styles.center}>
             <ActivityIndicator size="large" color="#2563eb" />
@@ -103,8 +176,15 @@ export default function LearnScreen() {
 
         {phase === "question" && question && (
           <View>
-            <View style={styles.topicBadge}>
-              <Text style={styles.topicText}>{question.topic}</Text>
+            <View style={styles.topicRow}>
+              <View style={styles.topicBadge}>
+                <Text style={styles.topicText}>{question.topic}</Text>
+              </View>
+              {(question.is_work || question.tags?.includes("work")) && (
+                <View style={styles.workBadge}>
+                  <Text style={styles.workText}>work</Text>
+                </View>
+              )}
             </View>
             <Markdown style={mdStyles}>
               {question.display_text ?? question.question_text}
@@ -170,7 +250,21 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 16,
   },
+  topicRow: {
+    flexDirection: "row",
+    gap: 8,
+    alignItems: "center",
+    marginBottom: 16,
+  },
   topicText: { color: "#7dd3fc", fontSize: 13, fontWeight: "600" },
+  workBadge: {
+    backgroundColor: "#1e3a8a",
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 10,
+    marginTop: -14,
+  },
+  workText: { color: "#dbeafe", fontSize: 12, fontWeight: "600" },
 
   questionText: {
     color: "#f5f5f5",
@@ -230,6 +324,50 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 20,
     textAlign: "center",
+  },
+  workToggleRow: {
+    marginBottom: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  workToggleLabel: {
+    color: "#d4d4d4",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  subjectRow: {
+    marginBottom: 12,
+  },
+  subjectLabel: {
+    color: "#d4d4d4",
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 8,
+  },
+  subjectChips: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  subjectChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#374151",
+    backgroundColor: "#111111",
+  },
+  subjectChipActive: {
+    borderColor: "#2563eb",
+    backgroundColor: "#1e3a8a",
+  },
+  subjectChipText: {
+    color: "#d1d5db",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  subjectChipTextActive: {
+    color: "#dbeafe",
   },
 });
 

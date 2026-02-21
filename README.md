@@ -117,6 +117,32 @@ ollama pull gemma3:12b
 
 Then open [http://localhost:5175](http://localhost:5175), add some questions, and start learning.
 
+## Work-Focused Learning
+
+Questions support lightweight tags (up to 2), and `work` is a first-class focus signal.
+
+- In **New/Edit Question**, add optional tags and toggle **Mark as work question**.
+- In **Learn**, toggle **Work focus only** to pull only work-tagged questions.
+- Interleaving remains the default; math interleaving is skipped while work focus is enabled.
+
+Backend-driven API filters:
+
+- `GET /api/v1/questions?focus=work`
+- `GET /api/v1/learn/next?focus=work`
+- `GET /api/v1/learn/stats?focus=work`
+
+### Backward compatibility and migration
+
+The backend auto-applies this schema change at startup for existing databases, so older data continues to work.
+
+If you prefer an explicit migration step, run:
+
+```bash
+psql -h server -U postgres -d learning-api -f backend/migrations/20260216_add_question_tags.sql
+```
+
+That migration is idempotent (`IF NOT EXISTS`) and includes optional backfill examples you can uncomment/edit.
+
 ## Backing Up the Schema
 
 ```bash

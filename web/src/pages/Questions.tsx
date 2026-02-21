@@ -7,11 +7,15 @@ export default function Questions() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [topicFilter, setTopicFilter] = useState("");
+  const [workOnly, setWorkOnly] = useState(false);
 
   const load = async () => {
     setLoading(true);
     try {
-      const data = await fetchQuestions(topicFilter || undefined);
+      const data = await fetchQuestions(
+        topicFilter || undefined,
+        workOnly ? "work" : undefined,
+      );
       setQuestions(data);
     } catch (err) {
       console.error("Failed to load questions", err);
@@ -22,13 +26,14 @@ export default function Questions() {
 
   useEffect(() => {
     load();
-  }, [topicFilter]);
+  }, [topicFilter, workOnly]);
 
   const topics = [...new Set(questions.map((q) => q.topic))].sort();
 
   const handleDelete = async (e: React.MouseEvent, q: Question) => {
     e.stopPropagation();
-    if (!confirm(`Delete "${q.question_text.slice(0, 50)}…"?`)) return;
+    const preview = (q.question_text ?? "").slice(0, 50);
+    if (!confirm(`Delete "${preview}…"?`)) return;
     try {
       await deleteQuestion(q.id);
       setQuestions((prev) => prev.filter((x) => x.id !== q.id));
@@ -53,6 +58,14 @@ export default function Questions() {
             <option key={t} value={t}>{t}</option>
           ))}
         </select>
+        <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <input
+            type="checkbox"
+            checked={workOnly}
+            onChange={(e) => setWorkOnly(e.target.checked)}
+          />
+          Work only
+        </label>
         <span className="count">
           {questions.length} question{questions.length !== 1 ? "s" : ""}
         </span>
@@ -74,6 +87,9 @@ export default function Questions() {
             >
               <div className="question-card-header">
                 <span className="topic-badge">{q.topic}</span>
+                {(q.is_work || q.tags?.includes("work")) && (
+                  <span className="topic-badge" style={{ background: "#2563eb" }}>work</span>
+                )}
                 {q.answer_text == null && <span className="no-answer">no reference answer</span>}
               </div>
               <div className="question-preview">{q.question_text}</div>
