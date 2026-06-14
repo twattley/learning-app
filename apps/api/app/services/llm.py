@@ -63,10 +63,9 @@ Respond in this exact format:
 
 SCORE: [1-5]
 VERDICT: [one sentence summary]
-MISSING: [bullet list of key points the user missed, or "Nothing — great answer!" if complete]
-TIP: [one actionable suggestion to improve their understanding]
+MISSING: [bullet list of key concepts not yet covered, or "Nothing — great answer!" if complete]
 
-Be encouraging but honest. Don't waffle."""
+Be encouraging but honest. Focus on conceptual understanding and coverage, not exact wording. Don't waffle."""
 
 REPHRASE_SYSTEM_PROMPT = """\
 Rephrase the following question. Keep the exact same meaning and scope.
@@ -81,11 +80,15 @@ async def get_feedback(
 ) -> dict:
     """Call the LLM to grade the user's answer. Returns parsed feedback."""
     if answer_text:
-        reference_block = f"The reference answer is:\n{answer_text}\n"
-    else:
         reference_block = (
-            "There is no reference answer. Use your own knowledge to evaluate."
+            "Use this as guidance for what a strong answer should generally cover "
+            "(not an exact template to mark against):\n"
+            f"{answer_text}\n"
+            "Accept equivalent phrasing, valid alternative examples, and different but "
+            "correct structures."
         )
+    else:
+        reference_block = "There is no guidance text. Use your own knowledge to evaluate conceptual coverage."
 
     system = FEEDBACK_SYSTEM_PROMPT.format(reference_block=reference_block)
 

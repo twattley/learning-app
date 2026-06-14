@@ -18,6 +18,35 @@ export default function Calculator({ onUseResult }: CalculatorProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const historyRef = useRef<HTMLDivElement>(null);
 
+  const preprocessExpression = (rawExpression: string) => {
+    let nextExpression = rawExpression;
+    const factorialTarget = /((?:\d+(?:\.\d+)?)|(?:[A-Za-z_]\w*)|(?:\([^()]+\)))!/g;
+
+    while (factorialTarget.test(nextExpression)) {
+      nextExpression = nextExpression.replace(
+        factorialTarget,
+        "factorial($1)",
+      );
+    }
+
+    return nextExpression;
+  };
+
+  const nCr = (n: number, r: number) => {
+    if (!Number.isInteger(n) || !Number.isInteger(r)) {
+      throw new Error("nCr only supports integers");
+    }
+    if (n < 0 || r < 0 || r > n) {
+      throw new Error("nCr requires n ≥ r ≥ 0");
+    }
+    const choose = Math.min(r, n - r);
+    let result = 1;
+    for (let i = 1; i <= choose; i += 1) {
+      result = (result * (n - choose + i)) / i;
+    }
+    return result;
+  };
+
   useEffect(() => {
     if (isOpen && inputRef.current) {
       inputRef.current.focus();
@@ -34,7 +63,8 @@ export default function Calculator({ onUseResult }: CalculatorProps) {
     if (!expression.trim()) return;
 
     try {
-      const result = evaluate(expression);
+      const normalizedExpression = preprocessExpression(expression);
+      const result = evaluate(normalizedExpression, { nCr });
       const formatted =
         typeof result === "number"
           ? Number(result.toPrecision(8)).toString()
@@ -123,7 +153,8 @@ export default function Calculator({ onUseResult }: CalculatorProps) {
       <div className="calc-symbols">
         <button onClick={() => insertSymbol("^")}>x^y</button>
         <button onClick={() => insertSymbol("sqrt(")}>√</button>
-        <button onClick={() => insertSymbol("factorial(")}>n!</button>
+        <button onClick={() => insertSymbol("!")}>n!</button>
+        <button onClick={() => insertSymbol("nCr(")}>nCr</button>
         <button onClick={() => insertSymbol("exp(")}>e^x</button>
         <button onClick={() => insertSymbol("log(")}>ln</button>
         <button onClick={() => insertSymbol("(")}>(</button>
@@ -140,7 +171,7 @@ export default function Calculator({ onUseResult }: CalculatorProps) {
           value={expression}
           onChange={(e) => setExpression(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="e.g., exp(-5) * 5^3 / factorial(3)"
+          placeholder="e.g., 5! / (2! * 3!) or nCr(5,2)"
         />
         <button className="calc-eval-btn" onClick={handleEvaluate}>
           =
