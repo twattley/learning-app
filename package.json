@@ -1,0 +1,8 @@
+{
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "web": "npm --workspace @recall/web run dev",
+    "mobile": "npm --workspace @recall/mobile run start"
+  },
+  "private": true
+}

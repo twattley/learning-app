@@ -1,0 +1,41 @@
+[project]
+name = "recall"
+version = "0.1.0"
+description = "Recall — flashcards on steroids"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "starlette-context",
+    "uvicorn",
+    "asyncpg>=0.30.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "httpx>=0.27.0",
+    "openai>=1.50.0",
+    "scipy>=1.11.0",
+]
+
+[project.scripts]
+recall = "app.cli:main"
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.8.0",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+]
+
+[tool.uv]
+package = true
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

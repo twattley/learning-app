@@ -18,7 +18,7 @@ node_modules/
 npm-debug.log*
 
 # Build output
-web/dist/
+apps/web/dist/
 *.tsbuildinfo
 
 # IDE
@@ -29,7 +29,7 @@ web/dist/
 .DS_Store
 
 # Expo
-mobile/.expo/
+apps/mobile/.expo/
 
 # Misc
 *.log
