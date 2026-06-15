@@ -71,13 +71,13 @@ uv run pytest
 ## Environment variables
 
 ```
-RECALL_DATABASE_URL         — PostgreSQL connection string (required)
-RECALL_GEMINI_API_KEY       — Google AI API key (required)
-RECALL_LLM_PROVIDER         — gemini | openai | ollama (default: gemini)
-RECALL_GEMINI_MODEL         — default: gemini-2.0-flash
-RECALL_OLLAMA_BASE_URL      — default: http://localhost:11434/v1
-RECALL_OLLAMA_MODEL         — default: gemma3:12b
-RECALL_REPHRASE_QUESTIONS   — true | false (default: false)
+DATABASE_URL         — PostgreSQL connection string (required)
+GEMINI_API_KEY       — Google AI API key (required)
+LLM_PROVIDER         — gemini | openai | ollama (default: gemini)
+GEMINI_MODEL         — default: gemini-2.0-flash
+OLLAMA_BASE_URL      — default: http://localhost:11434/v1
+OLLAMA_MODEL         — default: gemma3:12b
+REPHRASE_QUESTIONS   — true | false (default: false)
 ```
 
-Copy `.env.example` to `.env` and fill in values.
+Copy `.env.example` to `.env` and fill in values. The older `RECALL_...` names still work, but plain names are preferred.

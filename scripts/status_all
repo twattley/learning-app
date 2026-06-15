@@ -5,19 +5,23 @@
 
 set -e
 
-SESSION="learning-app"
+BACKEND_SESSION="learning-backend"
+FRONTEND_SESSION="learning-frontend"
 
 echo "🔍 Checking Learning API services..."
 echo ""
 
-# Check tmux session
-tmux has-session -t $SESSION 2>/dev/null
-if [ $? == 0 ]; then
-    echo "✅ Tmux session '$SESSION' is running"
-    echo ""
-    tmux list-windows -t $SESSION
+# Check tmux sessions
+if tmux has-session -t $BACKEND_SESSION 2>/dev/null; then
+    echo "✅ Backend tmux session '$BACKEND_SESSION' is running"
 else
-    echo "❌ Tmux session '$SESSION' is not running"
+    echo "❌ Backend tmux session '$BACKEND_SESSION' is not running"
+fi
+
+if tmux has-session -t $FRONTEND_SESSION 2>/dev/null; then
+    echo "✅ Frontend tmux session '$FRONTEND_SESSION' is running"
+else
+    echo "❌ Frontend tmux session '$FRONTEND_SESSION' is not running"
 fi
 
 echo ""

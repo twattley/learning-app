@@ -1,28 +1,50 @@
 from pathlib import Path
 from typing import Literal
 
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings
+from pydantic_settings import SettingsConfigDict
 
 _env_file = Path(__file__).resolve().parent.parent / ".env"
 
 
 class Settings(BaseSettings):
-    database_url: str
-    api_port: int = 8004
-    rephrase_questions: bool = True
+    database_url: str = Field(
+        validation_alias=AliasChoices("DATABASE_URL", "RECALL_DATABASE_URL")
+    )
+    api_port: int = Field(default=8003, validation_alias=AliasChoices("API_PORT", "RECALL_API_PORT"))
+    rephrase_questions: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("REPHRASE_QUESTIONS", "RECALL_REPHRASE_QUESTIONS"),
+    )
 
     # LLM provider: "gemini", "openai", or "ollama"
-    llm_provider: Literal["gemini", "openai", "ollama"] = "gemini"
+    llm_provider: Literal["gemini", "openai", "ollama"] = Field(
+        default="gemini",
+        validation_alias=AliasChoices("LLM_PROVIDER", "RECALL_LLM_PROVIDER"),
+    )
 
     # Gemini (cloud — default)
-    gemini_api_key: str = ""
-    gemini_model: str = "gemini-2.0-flash"
+    gemini_api_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("GEMINI_API_KEY", "RECALL_GEMINI_API_KEY"),
+    )
+    gemini_model: str = Field(
+        default="gemini-2.0-flash",
+        validation_alias=AliasChoices("GEMINI_MODEL", "RECALL_GEMINI_MODEL"),
+    )
 
     # Ollama (local)
-    ollama_base_url: str
-    ollama_model: str
+    ollama_base_url: str = Field(
+        default="http://localhost:11434/v1",
+        validation_alias=AliasChoices("OLLAMA_BASE_URL", "RECALL_OLLAMA_BASE_URL"),
+    )
+    ollama_model: str = Field(
+        default="gemma3:12b",
+        validation_alias=AliasChoices("OLLAMA_MODEL", "RECALL_OLLAMA_MODEL"),
+    )
 
-    model_config = {"env_prefix": "RECALL_", "env_file": str(_env_file)}
+    model_config = SettingsConfigDict(env_file=str(_env_file), extra="ignore")
 
 
 settings = Settings()

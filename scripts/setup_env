@@ -2,17 +2,23 @@
 # Setup environment for learning-api scripts
 # Usage: source "$(dirname "$0")/setup_env"
 
-PROJECT_ROOT="$HOME/Projects/learning-app"
+SCRIPT_DIR="$(cd "$(dirname "${(%):-%N}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+API_DIR="$PROJECT_ROOT/apps/api"
 
 echo "Setting up environment for learning-api"
 cd "$PROJECT_ROOT"
 
-# Activate virtual environment
-source "$PROJECT_ROOT/backend/.venv/bin/activate"
-
-# Load environment variables from .env
-if [[ -f "$PROJECT_ROOT/backend/.env" ]]; then
-    export $(grep -v '^#' "$PROJECT_ROOT/backend/.env" | xargs)
+# Activate a virtual environment when one exists
+if [[ -f "$API_DIR/.venv/bin/activate" ]]; then
+    source "$API_DIR/.venv/bin/activate"
+elif [[ -f "$PROJECT_ROOT/.venv/bin/activate" ]]; then
+    source "$PROJECT_ROOT/.venv/bin/activate"
 fi
 
-export PYTHONPATH="$PROJECT_ROOT/backend"
+# Load environment variables from .env
+if [[ -f "$API_DIR/.env" ]]; then
+    export $(grep -v '^#' "$API_DIR/.env" | xargs)
+fi
+
+export PYTHONPATH="$API_DIR"

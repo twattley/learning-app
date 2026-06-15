@@ -33,7 +33,7 @@ make install
 
 # Configure backend environment
 cp apps/api/.env.example apps/api/.env
-# Edit apps/api/.env and fill in RECALL_DATABASE_URL and RECALL_GEMINI_API_KEY
+# Edit apps/api/.env and fill in DATABASE_URL and GEMINI_API_KEY
 
 # Bootstrap the database
 make init-db
@@ -61,13 +61,15 @@ On first launch, go to the **Settings** tab to configure the API URL (e.g. `http
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `RECALL_DATABASE_URL` | Yes | — | PostgreSQL connection string |
-| `RECALL_GEMINI_API_KEY` | Yes | — | Google AI API key |
-| `RECALL_LLM_PROVIDER` | No | `gemini` | `gemini` \| `openai` \| `ollama` |
-| `RECALL_GEMINI_MODEL` | No | `gemini-2.0-flash` | Gemini model name |
-| `RECALL_OLLAMA_BASE_URL` | No | `http://localhost:11434/v1` | Ollama endpoint |
-| `RECALL_OLLAMA_MODEL` | No | `gemma3:12b` | Ollama model name |
-| `RECALL_REPHRASE_QUESTIONS` | No | `false` | Rephrase questions on each review |
+| `DATABASE_URL` | Yes | — | PostgreSQL connection string |
+| `GEMINI_API_KEY` | Yes | — | Google AI API key |
+| `LLM_PROVIDER` | No | `gemini` | `gemini` \| `openai` \| `ollama` |
+| `GEMINI_MODEL` | No | `gemini-2.0-flash` | Gemini model name |
+| `OLLAMA_BASE_URL` | No | `http://localhost:11434/v1` | Ollama endpoint |
+| `OLLAMA_MODEL` | No | `gemma3:12b` | Ollama model name |
+| `REPHRASE_QUESTIONS` | No | `false` | Rephrase questions on each review |
+
+Most of these already have code defaults in [apps/api/app/config.py](/Users/tomwattley/Projects/learning-app/apps/api/app/config.py), so the example `.env` only includes the external values. The older `RECALL_...` variable names are still accepted for compatibility.
 
 ## Further reading
 

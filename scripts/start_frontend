@@ -8,6 +8,7 @@ set -e
 
 SCRIPT_DIR="$(dirname "$0")"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+WEB_DIR="$PROJECT_DIR/apps/web"
 SESSION_NAME="learning-frontend"
 
 if [[ "$1" == "--tmux" ]]; then
@@ -15,7 +16,7 @@ if [[ "$1" == "--tmux" ]]; then
   tmux kill-session -t $SESSION_NAME 2>/dev/null || true
   
   # Create new detached session
-  tmux new-session -d -s $SESSION_NAME -c "$PROJECT_DIR/web"
+  tmux new-session -d -s $SESSION_NAME -c "$WEB_DIR"
   tmux send-keys -t $SESSION_NAME "npm run dev" Enter
   
   echo "✅ Started frontend in tmux session: $SESSION_NAME"
@@ -27,6 +28,6 @@ else
   echo "Frontend will be available at: http://localhost:5176"
   echo ""
   
-  cd "$PROJECT_DIR/web"
+  cd "$WEB_DIR"
   npm run dev
 fi

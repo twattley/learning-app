@@ -8,12 +8,19 @@ set -e
 
 SCRIPT_DIR="$(dirname "$0")"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+API_DIR="$PROJECT_DIR/apps/api"
 SESSION_NAME="learning-backend"
 
 cd "$PROJECT_DIR"
 
 # Load environment
 source "$SCRIPT_DIR/setup_env"
+
+if [[ -z "${DATABASE_URL:-${RECALL_DATABASE_URL:-}}" ]]; then
+  echo "❌ Missing DATABASE_URL"
+  echo "   Create $API_DIR/.env or export DATABASE_URL before starting the backend."
+  exit 1
+fi
 
 # Kill any process listening on port 8003 (macOS)
 PIDS=$(lsof -ti tcp:8003 || true)
@@ -25,12 +32,28 @@ if [[ -n "$PIDS" ]]; then
 fi
 
 if [[ "$1" == "--tmux" ]]; then
-  # Kill existing session if it exists
-  tmux kill-session -t $SESSION_NAME 2>/dev/null || true
-  
-  # Create new detached session
-  tmux new-session -d -s $SESSION_NAME -c "$PROJECT_DIR/backend"
-  tmux send-keys -t $SESSION_NAME "source .env 2>/dev/null; .venv/bin/python -m app.main" Enter
+  # Keep existing healthy session rather than replacing it.
+  if tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
+    echo "✅ Backend tmux session already running: $SESSION_NAME"
+    echo "   API: http://localhost:8003"
+    echo "   Docs: http://localhost:8003/docs"
+    echo ""
+    echo "   Attach: tmux attach -t $SESSION_NAME"
+    exit 0
+  fi
+
+  # Kill any stale process listening on port 8003 before creating a new session.
+  PIDS=$(lsof -ti tcp:8003 || true)
+  if [[ -n "$PIDS" ]]; then
+    echo "Killing process(es) on port 8003: $PIDS"
+    kill -TERM $PIDS 2>/dev/null || true
+    sleep 1
+    kill -KILL $PIDS 2>/dev/null || true
+  fi
+
+  # Create new detached session and auto-restart on unexpected exit.
+  tmux new-session -d -s $SESSION_NAME -c "$API_DIR"
+  tmux send-keys -t $SESSION_NAME "while true; do uv run recall serve --port 8003; code=\$?; echo \"[learning-backend] exited \$code at \$(date). Restarting in 2s...\"; sleep 2; done" Enter
   
   echo "✅ Started backend in tmux session: $SESSION_NAME"
   echo "   API: http://localhost:8003"
@@ -43,6 +66,6 @@ else
   echo "API docs: http://localhost:8003/docs"
   echo ""
   
-  cd backend
-  .venv/bin/python -m app.main
+  cd "$API_DIR"
+  uv run recall serve --port 8003
 fi
