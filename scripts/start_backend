@@ -22,15 +22,6 @@ if [[ -z "${DATABASE_URL:-${RECALL_DATABASE_URL:-}}" ]]; then
   exit 1
 fi
 
-# Kill any process listening on port 8003 (macOS)
-PIDS=$(lsof -ti tcp:8003 || true)
-if [[ -n "$PIDS" ]]; then
-  echo "Killing process(es) on port 8003: $PIDS"
-  kill -TERM $PIDS 2>/dev/null || true
-  sleep 1
-  kill -KILL $PIDS 2>/dev/null || true
-fi
-
 if [[ "$1" == "--tmux" ]]; then
   # Keep existing healthy session rather than replacing it.
   if tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
@@ -65,6 +56,15 @@ else
   echo "API will be available at: http://localhost:8003"
   echo "API docs: http://localhost:8003/docs"
   echo ""
+
+  # Kill any process listening on port 8003 (macOS) for direct non-tmux run.
+  PIDS=$(lsof -ti tcp:8003 || true)
+  if [[ -n "$PIDS" ]]; then
+    echo "Killing process(es) on port 8003: $PIDS"
+    kill -TERM $PIDS 2>/dev/null || true
+    sleep 1
+    kill -KILL $PIDS 2>/dev/null || true
+  fi
   
   cd "$API_DIR"
   uv run recall serve --port 8003
